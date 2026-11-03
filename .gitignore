@@ -1,0 +1,5 @@
+# macOS
+.DS_Store
+
+# build artifact - the repo is the source of truth, not the zip
+*.zip

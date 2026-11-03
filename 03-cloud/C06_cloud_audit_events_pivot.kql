@@ -1,0 +1,34 @@
+// ============================================================================
+// PACK: Cloud  |  QUERY: C06 - Cloud audit events (AWS / GCP / Azure / K8s) by IP or operation
+// Tables: CloudAuditEvents
+// Inputs: InputIpAddress, InputDataSource, InputResourceId (all OPTIONAL)
+// Perf:   time-bounded with 'between'; entity filters before summarize/joins.
+// Schema: verified against the current Defender XDR advanced hunting schema.
+//         CloudAppEvents has NO AccountUpn column - the actor is AccountId
+//         (usually the UPN) plus AccountObjectId. CloudAuditEvents has no actor
+//         column at all: the principal lives inside RawEventData.
+// ============================================================================
+// CloudAuditEvents has no actor column - the principal is inside RawEventData,
+// so this query keeps that column rather than inventing a dereference path
+// that differs per platform. Group by OperationName to see the intent.
+
+let LookbackStart = ago(7d);
+let LookbackEnd   = now();
+let InputIpAddress  = "";
+let InputDataSource = "";   // "AWS", "GCP", "Azure", "Kubernetes Audit"
+let InputResourceId = "";
+
+CloudAuditEvents
+| where Timestamp between (LookbackStart .. LookbackEnd)
+| where (isempty(InputIpAddress)  or IPAddress == InputIpAddress)
+    and (isempty(InputDataSource) or DataSource =~ InputDataSource)
+    and (isempty(InputResourceId) or ResourceId =~ InputResourceId)
+| extend Principal = tostring(RawEventData.UserIdentity.Arn)
+| summarize Events     = count(),
+            Resources  = dcount(ResourceId),
+            Ips        = make_set(IPAddress, 10),
+            Countries  = make_set(CountryCode, 5),
+            Principals = make_set(Principal, 10)
+          by DataSource, OperationName, ActionType
+| order by Events desc
+| take 100

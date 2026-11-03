@@ -1,0 +1,35 @@
+// ============================================================================
+// PACK: Cloud  |  QUERY: C03 - Mailbox rule / delegation persistence (exchange online)
+// Tables: CloudAppEvents
+// Inputs: InputAccountId, InputObjectName (both OPTIONAL)
+// Perf:   time-bounded with 'between'; entity filters before summarize/joins.
+// Schema: verified against the current Defender XDR advanced hunting schema.
+//         CloudAppEvents has NO AccountUpn column - the actor is AccountId
+//         (usually the UPN) plus AccountObjectId. CloudAuditEvents has no actor
+//         column at all: the principal lives inside RawEventData.
+// ============================================================================
+// Post-compromise persistence in Exchange Online: forwarding rules, hidden
+// rules, and mailbox delegation. The action list is a variable on purpose -
+// add tenant-specific operations without editing the logic.
+
+let LookbackStart = ago(14d);
+let LookbackEnd   = now();
+let InputAccountId  = "";
+let InputObjectName = "";
+let MailboxPersistenceActions = dynamic([
+    "New-InboxRule", "Set-InboxRule", "UpdateInboxRules", "Remove-InboxRule",
+    "Set-Mailbox", "Add-MailboxPermission", "Remove-MailboxPermission",
+    "Add-MailboxFolderPermission", "Set-MailboxAutoReplyConfiguration",
+    "New-TransportRule", "Set-TransportRule"
+]);
+
+CloudAppEvents
+| where Timestamp between (LookbackStart .. LookbackEnd)
+| where ActionType has_any (MailboxPersistenceActions)
+| where (isempty(InputAccountId)  or AccountId =~ InputAccountId)
+    and (isempty(InputObjectName) or ObjectName has InputObjectName)
+| project Timestamp, ActionType, AccountId, AccountDisplayName, IPAddress,
+          CountryCode, UserAgent, IsAdminOperation, ObjectType, ObjectName,
+          RuleParameters = RawEventData
+| order by Timestamp desc
+| take 500

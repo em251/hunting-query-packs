@@ -1,0 +1,35 @@
+// ============================================================================
+// PACK: Identity  |  QUERY: I13 - Endpoint logon pivot for a user or host (DeviceLogonEvents)
+// Tables: DeviceLogonEvents
+// Inputs: InputAccountUpn, InputDeviceName, InputIpAddress (all OPTIONAL)
+// Perf:   time-bounded with 'between'; entity filters before summarize/joins.
+// Schema: columns verified against the current Defender XDR advanced hunting
+//         schema (EntraIdSignInEvents is the current sign-in table; the older
+//         AADSignInEventsBeta table is not used anywhere in this pack).
+// ============================================================================
+// The endpoint side of an identity incident: which device was logged into, how
+// (LogonType), from where, and whether it failed. Pairs with I07.
+
+let LookbackStart = ago(7d);
+let LookbackEnd   = now();
+let InputAccountUpn = "";
+let InputDeviceName = "";
+let InputIpAddress  = "";
+
+DeviceLogonEvents
+| where Timestamp between (LookbackStart .. LookbackEnd)
+| where (isempty(InputAccountUpn) or AccountUpn =~ InputAccountUpn)
+    and (isempty(InputDeviceName) or DeviceName =~ InputDeviceName)
+    and (isempty(InputIpAddress)  or RemoteIP == InputIpAddress)
+| summarize Attempts    = count(),
+            Successes   = countif(ActionType == "LogonSuccess"),
+            Failures    = countif(ActionType == "LogonFailed"),
+            LogonTypes  = make_set(LogonType, 5),
+            Protocols   = make_set(Protocol, 5),
+            RemoteIps   = make_set(RemoteIP, 10),
+            FailReasons = make_set(FailureReason, 5),
+            FirstSeen   = min(Timestamp),
+            LastSeen    = max(Timestamp)
+          by AccountUpn, DeviceName, RemoteIPType
+| order by Failures desc, Attempts desc
+| take 200
