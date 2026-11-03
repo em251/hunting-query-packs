@@ -1,5 +1,5 @@
 // ============================================================================
-// PACK: Identity  |  QUERY: I10 - IP pivot: one source IP against many accounts (spray / AiTM relay)
+// PACK: Identity  |  QUERY: I11 - IP pivot: one source IP against many accounts (spray / AiTM relay)
 // Tables: EntraIdSignInEvents
 // Inputs: InputIpAddress (REQUIRED), Threshold (default 5)
 // Perf:   time-bounded with 'between'; entity filters before summarize/joins.

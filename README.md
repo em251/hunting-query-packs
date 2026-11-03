@@ -88,19 +88,20 @@ attack surface, then the account and fleet-level pivots.
 | `I02_session_impact_timeline.kql` | Session impact timeline: chronological replay of the session |
 | `I03_session_mailbox_file_activity.kql` | Session mailbox / file activity (Exchange, SharePoint, OneDrive, Teams) |
 | `I04_session_and_token_replay.kql` | Session / token replay: one session id from many IPs or countries |
-| `I05_hybrid_logon_pivot.kql` | Hybrid / on-prem authentication pivot (IdentityLogonEvents) |
-| `I06_directory_changes.kql` | Directory changes touching the account (password, groups, enable/disable) |
-| `I07_directory_recon_enumeration.kql` | Directory recon: LDAP / SAMR enumeration from one account or host |
-| `I08_device_logon_pivot.kql` | Endpoint logon pivot for a user or host (DeviceLogonEvents) |
-| `I09_account_signin_overview.kql` | Account sign-in overview (where / how / how often) |
-| `I10_ip_pivot_and_spray.kql` | IP pivot: one source IP against many accounts (spray / AiTM relay) |
-| `I11_new_country_and_new_ip.kql` | First-time country / IP for an account (30-day baseline) |
-| `I12_mfa_failure_burst.kql` | MFA fatigue / repeated MFA failures |
-| `I13_service_principal_signins.kql` | Service principal / managed identity sign-ins (app compromise) |
-| `I14_risky_signins.kql` | Risky sign-ins and Conditional Access outcomes |
-| `I15_user_agent_reuse.kql` | Client fingerprint reuse (one UA across many accounts) |
-| `I16_alert_pivot_identity.kql` | Identity alert pivot (alert + evidence + source IP) |
-| `I17_cross_table_ip_pivot.kql` | One IP across every identity table (union pivot) |
+| `I05_session_id_join_check.kql` | Session id join check (does the Entra id appear in cloud app data?) |
+| `I06_hybrid_logon_pivot.kql` | Hybrid / on-prem authentication pivot (IdentityLogonEvents) |
+| `I07_directory_changes.kql` | Directory changes touching the account (password, groups, enable/disable) |
+| `I08_directory_recon_enumeration.kql` | Directory recon: LDAP / SAMR enumeration from one account or host |
+| `I09_device_logon_pivot.kql` | Endpoint logon pivot for a user or host (DeviceLogonEvents) |
+| `I10_account_signin_overview.kql` | Account sign-in overview (where / how / how often) |
+| `I11_ip_pivot_and_spray.kql` | IP pivot: one source IP against many accounts (spray / AiTM relay) |
+| `I12_new_country_and_new_ip.kql` | First-time country / IP for an account (30-day baseline) |
+| `I13_mfa_failure_burst.kql` | MFA fatigue / repeated MFA failures |
+| `I14_service_principal_signins.kql` | Service principal / managed identity sign-ins (app compromise) |
+| `I15_risky_signins.kql` | Risky sign-ins and Conditional Access outcomes |
+| `I16_user_agent_reuse.kql` | Client fingerprint reuse (one UA across many accounts) |
+| `I17_alert_pivot_identity.kql` | Identity alert pivot (alert + evidence + source IP) |
+| `I18_cross_table_ip_pivot.kql` | One IP across every identity table (union pivot) |
 
 ### Cloud - `03-cloud/`
 
@@ -258,10 +259,10 @@ Four defects that this caught and a documentation review did not:
 
 | Query | Defect |
 | --- | --- |
-| `M05` | single backslashes in registry paths (`"\CurrentVersion\Run"`) - KQL rejects the unknown escape; now doubled |
-| `C04` | `CloudAppEvents.ApplicationId` is `int`, so `=~` against a string input fails; wrapped in `tostring()` |
-| `I08` | `DeviceLogonEvents` has no `AccountUpn` - it carries `AccountName` / `AccountDomain`; regrouped |
-| `M07` | same, in the logon branch of the lateral-movement union |
+| `M05_persistence_artifacts.kql` | single backslashes in registry paths (`"\CurrentVersion\Run"`) - KQL rejects the unknown escape; now doubled |
+| `C04_oauth_consent_and_grants.kql` | `CloudAppEvents.ApplicationId` is `int`, so `=~` against a string input fails; wrapped in `tostring()` |
+| `I09_device_logon_pivot.kql` | `DeviceLogonEvents` has no `AccountUpn` - it carries `AccountName` / `AccountDomain`; regrouped |
+| `M07_lateral_movement.kql` | same, in the logon branch of the lateral-movement union |
 
 What this does **not** prove: that a query returns useful rows. Parsing shows the
 query compiles and every column exists; it says nothing about thresholds or data

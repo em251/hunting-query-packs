@@ -1,5 +1,5 @@
 // ============================================================================
-// PACK: Identity  |  QUERY: I11 - First-time country / IP for an account (30-day baseline)
+// PACK: Identity  |  QUERY: I12 - First-time country / IP for an account (30-day baseline)
 // Tables: EntraIdSignInEvents
 // Inputs: InputAccountUpn (REQUIRED)
 // Perf:   time-bounded with 'between'; entity filters before summarize/joins.

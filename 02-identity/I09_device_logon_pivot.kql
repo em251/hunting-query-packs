@@ -1,5 +1,5 @@
 // ============================================================================
-// PACK: Identity  |  QUERY: I08 - Endpoint logon pivot for a user or host (DeviceLogonEvents)
+// PACK: Identity  |  QUERY: I09 - Endpoint logon pivot for a user or host (DeviceLogonEvents)
 // Tables: DeviceLogonEvents
 // Inputs: InputAccountUpn (matched against AccountName - this table carries
 //         sAMAccountName/SID, not UPN), InputDeviceName, InputIpAddress

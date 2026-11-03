@@ -1,5 +1,5 @@
 // ============================================================================
-// PACK: Identity  |  QUERY: I12 - MFA fatigue / repeated MFA failures
+// PACK: Identity  |  QUERY: I13 - MFA fatigue / repeated MFA failures
 // Tables: EntraIdSignInEvents
 // Inputs: InputAccountUpn, InputIpAddress (both OPTIONAL), Threshold (default 5)
 // Perf:   time-bounded with 'between'; entity filters before summarize/joins.

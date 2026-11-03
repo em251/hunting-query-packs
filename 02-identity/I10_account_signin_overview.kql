@@ -1,5 +1,5 @@
 // ============================================================================
-// PACK: Identity  |  QUERY: I09 - Account sign-in overview (where / how / how often)
+// PACK: Identity  |  QUERY: I10 - Account sign-in overview (where / how / how often)
 // Tables: EntraIdSignInEvents
 // Inputs: InputAccountUpn (REQUIRED for a focused look)
 // Perf:   time-bounded with 'between'; entity filters before summarize/joins.

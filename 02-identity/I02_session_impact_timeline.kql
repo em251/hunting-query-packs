@@ -40,6 +40,10 @@ let Window =
              WindowEnd   = LastEvent + SessionTailHours * 1h
     | project ActorKey = tolower(AccountUpn), WindowStart, WindowEnd;
 
+// Four anchors, any of which can be the one you have: the derived session
+// window, RawEventData.AppAccessContext.AADSessionId, the workload session id,
+// or the source IP (a typed column in CloudAppEvents).
+//
 // CloudAppEvents has no typed SessionId/CorrelationId column, but app-mediated
 // Office activity carries the Entra session id inside the payload:
 //   RawEventData.AppAccessContext.AADSessionId  (Office 365 audit schema:
@@ -69,12 +73,16 @@ let Activity =
                  AADSessionId       = tostring(RawEventData.AppAccessContext.AADSessionId),
                  WorkloadSessionId  = tostring(RawEventData.SessionId)
         | join kind=leftouter (Window) on ActorKey
+        // three independent anchors: the derived session window, the Entra
+        // session id carried in the payload, or the source IP itself
         | where (Timestamp >= WindowStart and Timestamp <= WindowEnd)
              or (isnotempty(InputSessionId)
                  and (AADSessionId =~ InputSessionId or WorkloadSessionId =~ InputSessionId))
+             or (isnotempty(InputIpAddress) and IPAddress == InputIpAddress)
         | extend MatchBasis = case(
               isnotempty(InputSessionId) and AADSessionId =~ InputSessionId, "AADSessionId",
               isnotempty(InputSessionId) and WorkloadSessionId =~ InputSessionId, "workloadSessionId",
+              isnotempty(InputIpAddress) and IPAddress == InputIpAddress, "sourceIp",
               "account+window")
         | project Timestamp, Source = "CloudApp", ActorKey, Application,
                   Operation = ActionType, Object = ObjectName, IPAddress,
@@ -83,12 +91,15 @@ let Activity =
         | where Timestamp between (LookbackStart .. LookbackEnd)
         | where isnotempty(AccountUpn)
         | extend ActorKey = tolower(AccountUpn)
-        | join kind=inner (Window) on ActorKey
-        | where Timestamp >= WindowStart and Timestamp <= WindowEnd
+        | join kind=leftouter (Window) on ActorKey
+        | where (Timestamp >= WindowStart and Timestamp <= WindowEnd)
+             or (isnotempty(InputIpAddress) and IPAddress == InputIpAddress)
+        | extend MatchBasis = case(
+              isnotempty(InputIpAddress) and IPAddress == InputIpAddress, "sourceIp",
+              "account+window")
         | project Timestamp, Source = "IdentityLogon", ActorKey, Application,
                   Operation = ActionType, Object = DeviceName, IPAddress,
-                  Country = Location, UserAgent = strcat(""),
-                  MatchBasis = "account+window");
+                  Country = Location, UserAgent = strcat(""), MatchBasis);
 
 Activity
 | project-reorder Timestamp, Source, Application, Operation, Object, IPAddress,

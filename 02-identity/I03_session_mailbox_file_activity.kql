@@ -21,6 +21,7 @@
 let LookbackStart = ago(24h);
 let LookbackEnd   = now();
 let InputAccountUpn      = "";
+let InputIpAddress       = "";   // optional: everything this host touched
 let InputAccountObjectId = "";
 let OfficeApplications = dynamic([
     "Microsoft Exchange Online", "Microsoft SharePoint Online", "Microsoft OneDrive for Business",
@@ -31,6 +32,7 @@ CloudAppEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
 | where (isempty(InputAccountUpn)      or AccountId =~ InputAccountUpn)
     and (isempty(InputAccountObjectId) or AccountObjectId =~ InputAccountObjectId)
+    and (isempty(InputIpAddress)      or IPAddress == InputIpAddress)
 | where Application has_any (OfficeApplications)
      or ObjectType has_any ("File", "Folder", "Message", "MailItem", "Mailbox")
 | extend UncommonAttributes = tostring(UncommonForUser),

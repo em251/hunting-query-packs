@@ -1,5 +1,5 @@
 // ============================================================================
-// PACK: Identity  |  QUERY: I07 - Directory recon: LDAP / SAMR enumeration from one account or host
+// PACK: Identity  |  QUERY: I08 - Directory recon: LDAP / SAMR enumeration from one account or host
 // Tables: IdentityQueryEvents
 // Inputs: InputAccountUpn, InputDeviceName, InputIpAddress (all OPTIONAL), Threshold (default 25)
 // Perf:   time-bounded with 'between'; entity filters before summarize/joins.
