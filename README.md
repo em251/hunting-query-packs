@@ -191,6 +191,8 @@ are grounded in the *source* payload schemas:
 | `RawEventData.protoPayload.{authenticationInfo.principalEmail,methodName,status}` | GCP AuditLog |
 | `RawEventData.identity.claims`, `properties.eventName` | Azure Activity Log schema |
 | `RawEventData.user.username`, `verb`, `responseStatus` | Kubernetes audit event |
+| `RawEventData.AppAccessContext.AADSessionId` | Office 365 audit schema - "The Microsoft Entra SessionId of the Entra sign-in that was performed by the app on behalf of the user". This is the only way to tie Office activity to an Entra session |
+| `RawEventData.SessionId` / `CorrelationId` | Office 365 audit schema - workload-level ids, distinct from the Entra ones above |
 
 Because the shape varies by connector, `C14` enumerates the keys actually
 present in your tenant (`bag_keys` + sample values) before you hard-code
