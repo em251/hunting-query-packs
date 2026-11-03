@@ -1,7 +1,8 @@
 // ============================================================================
 // PACK: Identity  |  QUERY: I13 - Endpoint logon pivot for a user or host (DeviceLogonEvents)
 // Tables: DeviceLogonEvents
-// Inputs: InputAccountUpn, InputDeviceName, InputIpAddress (all OPTIONAL)
+// Inputs: InputAccountUpn (matched against AccountName - this table carries
+//         sAMAccountName/SID, not UPN), InputDeviceName, InputIpAddress
 // Perf:   time-bounded with 'between'; entity filters before summarize/joins.
 // Schema: columns verified against the current Defender XDR advanced hunting
 //         schema (EntraIdSignInEvents is the current sign-in table; the older
@@ -18,7 +19,8 @@ let InputIpAddress  = "";
 
 DeviceLogonEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
-| where (isempty(InputAccountUpn) or AccountUpn =~ InputAccountUpn)
+| where (isempty(InputAccountUpn) or AccountName =~ InputAccountUpn
+                                   or InitiatingProcessAccountUpn =~ InputAccountUpn)
     and (isempty(InputDeviceName) or DeviceName =~ InputDeviceName)
     and (isempty(InputIpAddress)  or RemoteIP == InputIpAddress)
 | summarize Attempts    = count(),
@@ -30,6 +32,6 @@ DeviceLogonEvents
             FailReasons = make_set(FailureReason, 5),
             FirstSeen   = min(Timestamp),
             LastSeen    = max(Timestamp)
-          by AccountUpn, DeviceName, RemoteIPType
+          by AccountName, AccountDomain, DeviceName, RemoteIPType
 | order by Failures desc, Attempts desc
 | take 200

@@ -29,7 +29,7 @@ let Consents =
     | where ActionType has_any (ConsentActions) or ActivityType has_any (ConsentActions)
     | where (isempty(InputAccountId)     or AccountId =~ InputAccountId)
         and (isempty(InputOAuthAppId)    or OAuthAppId =~ InputOAuthAppId)
-        and (isempty(InputApplicationId) or ApplicationId =~ InputApplicationId)
+        and (isempty(InputApplicationId) or tostring(ApplicationId) =~ InputApplicationId)
     | project ConsentTime = Timestamp, ActionType, ActivityType, AccountId, AccountDisplayName,
               IPAddress, CountryCode, UserAgent, OAuthAppId, ApplicationId, ObjectName,
               ConsentDetails = RawEventData;

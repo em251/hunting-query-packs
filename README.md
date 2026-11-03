@@ -206,6 +206,23 @@ Two consequences worth knowing:
 * **Alert-driven queries** filter evidence on `isnotempty(NetworkMessageId)` /
   `isnotempty(AccountUpn)` rather than guessing `EntityType` strings, which vary
   by alert family.
-* These queries were checked against the published schema and reviewed for KQL
-  syntax; they have not been executed against a live tenant, so run each one once
-  with a short lookback (e.g. `ago(1h)`) before using it in anger.
+## Validation
+
+All 49 queries are parsed and bound with Microsoft's own KQL parser
+(`Microsoft.Azure.Kusto.Language` 12.4.1) against a schema of 32 Defender XDR
+tables / 1,016 columns scraped from the published reference. Every query passes
+parse + semantic analysis: no unknown table, no unknown column, no type mismatch.
+
+Four defects that this caught and a documentation review did not:
+
+| Query | Defect |
+| --- | --- |
+| `M05` | single backslashes in registry paths (`"\CurrentVersion\Run"`) - KQL rejects the unknown escape; now doubled |
+| `C04` | `CloudAppEvents.ApplicationId` is `int`, so `=~` against a string input fails; wrapped in `tostring()` |
+| `I13` | `DeviceLogonEvents` has no `AccountUpn` - it carries `AccountName` / `AccountDomain`; regrouped |
+| `M07` | same, in the logon branch of the lateral-movement union |
+
+What this does **not** prove: that a query returns useful rows. Parsing shows the
+query compiles and every column exists; it says nothing about thresholds or data
+volume. Run each once with a short lookback (e.g. `ago(1h)`) before using it in
+anger.
