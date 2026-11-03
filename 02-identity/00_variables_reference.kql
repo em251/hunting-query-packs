@@ -20,6 +20,9 @@ let InputSessionId       = "";          // EntraIdSignInEvents.SessionId
 let InputUniqueTokenId   = "";          // EntraIdSignInEvents.UniqueTokenId
 let InputCorrelationId   = "";          // EntraIdSignInEvents.CorrelationId
 let InputRequestId       = "";          // EntraIdSignInEvents.RequestId
+let InputMcasSessionId   = "";          // CloudAppEvents.SessionData.InLineSessionId
+                                        // (MCAS session-control id - NOT the Entra
+                                        //  session id; separate id space)
 
 // --- client fingerprint -----------------------------------------------------
 let InputUserAgent       = "";          // exact or partial UA string

@@ -18,10 +18,15 @@
 //   no rows at all                              -> no AppAccessContext in this
 //                                                  tenant's records; account +
 //                                                  window is doing all the work
+//   SessionData.InLineSessionId rows            -> that is the MCAS session-control
+//                                                  id, a third id space: only
+//                                                  match it with InputMcasSessionId
 
 let LookbackStart = ago(7d);
 let LookbackEnd   = now();
-let InputSessionId = "";   // REQUIRED - paste an Entra session id
+let InputSessionId     = "";   // an EntraIdSignInEvents.SessionId
+let InputMcasSessionId = "";   // a Defender for Cloud Apps inline session id
+                               // (fill either one)
 
 let EntraSide =
     EntraIdSignInEvents
@@ -35,15 +40,23 @@ let CloudSide =
     CloudAppEvents
     | where Timestamp between (LookbackStart .. LookbackEnd)
     | where isnotempty(InputSessionId)
+    | where isnotempty(InputSessionId) or isnotempty(InputMcasSessionId)
     | extend AADSessionId        = tostring(RawEventData.AppAccessContext.AADSessionId),
              WorkloadSessionId   = tostring(RawEventData.SessionId),
-             WorkloadCorrelation = tostring(RawEventData.CorrelationId)
-    | where AADSessionId =~ InputSessionId
-         or WorkloadSessionId =~ InputSessionId
-         or WorkloadCorrelation =~ InputSessionId
+             WorkloadCorrelation = tostring(RawEventData.CorrelationId),
+             InLineSessionId     = tostring(SessionData.InLineSessionId)
+    | where (isnotempty(InputSessionId)
+             and (AADSessionId =~ InputSessionId
+                  or WorkloadSessionId =~ InputSessionId
+                  or WorkloadCorrelation =~ InputSessionId))
+         or (isnotempty(InputMcasSessionId) and InLineSessionId =~ InputMcasSessionId)
     | extend MatchField = case(
-          AADSessionId =~ InputSessionId,        "CloudAppEvents.RawEventData.AppAccessContext.AADSessionId",
-          WorkloadSessionId =~ InputSessionId,   "CloudAppEvents.RawEventData.SessionId",
+          isnotempty(InputMcasSessionId) and InLineSessionId =~ InputMcasSessionId,
+              "CloudAppEvents.SessionData.InLineSessionId",
+          AADSessionId =~ InputSessionId,
+              "CloudAppEvents.RawEventData.AppAccessContext.AADSessionId",
+          WorkloadSessionId =~ InputSessionId,
+              "CloudAppEvents.RawEventData.SessionId",
           "CloudAppEvents.RawEventData.CorrelationId")
     | summarize Rows         = count(),
                 Accounts     = make_set(AccountId, 5),
