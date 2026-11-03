@@ -1,0 +1,94 @@
+// ============================================================================
+// PACK: Identity  |  QUERY: I01 - Session impact summary: every workload the session touched
+// Tables: EntraIdSignInEvents, CloudAppEvents, IdentityLogonEvents
+// Inputs: InputSessionId / InputCorrelationId / InputIpAddress / InputAccountUpn
+//         (fill at least one) + SessionTailHours
+// Perf:   anchor is one bounded sign-in scan; each downstream table joins that
+//         small window set instead of scanning per-user history.
+// Schema: verified against the current Defender XDR advanced hunting schema.
+// ============================================================================
+// The impact-analysis query. Paste a session id, correlation id, source IP or
+// UPN and get one row per source/application/operation - which tells you whether
+// a compromised session only read mail or also sent, shared, downloaded or
+// changed mailbox config.
+//
+// How the session is defined: the anchor sign-ins matching your identifier set
+// the time window (first sign-in - 1h .. last sign-in + SessionTailHours), and
+// every downstream table is scoped to that account inside that window. That is
+// deliberate - CloudAppEvents has no SessionId column, so account + window is
+// the only correct linkage. Widen SessionTailHours for long-lived sessions.
+
+let LookbackStart = ago(7d);
+let LookbackEnd   = now();
+let SessionTailHours = 6;             // activity considered part of the session
+
+// --- any one of these anchors the investigation ---------------------------
+let InputSessionId     = "";
+let InputCorrelationId = "";
+let InputIpAddress     = "";
+let InputAccountUpn    = "";
+
+// --- anchor: the sign-in(s) matching any identifier, per account ----------
+let Anchor =
+    EntraIdSignInEvents
+    | where Timestamp between (LookbackStart .. LookbackEnd)
+    | where (isnotempty(InputSessionId)     and SessionId =~ InputSessionId)
+         or (isnotempty(InputCorrelationId) and CorrelationId =~ InputCorrelationId)
+         or (isnotempty(InputIpAddress)     and IPAddress == InputIpAddress)
+         or (isnotempty(InputAccountUpn)    and AccountUpn =~ InputAccountUpn)
+    | summarize FirstEvent = min(Timestamp),
+                LastEvent  = max(Timestamp),
+                SignIns    = count(),
+                Ips        = make_set(IPAddress, 10),
+                UserAgents = make_set(UserAgent, 5),
+                Apps       = make_set(Application, 15)
+              by AccountUpn, AccountObjectId;
+let Window =
+    Anchor
+    | extend WindowStart = FirstEvent - 1h,
+             WindowEnd   = LastEvent + SessionTailHours * 1h
+    | project ActorKey = tolower(AccountUpn), WindowStart, WindowEnd;
+
+// Join key is the account UPN (lowercased). If your tenant populates AccountId
+// with an object id instead, swap ActorKey to tolower(AccountObjectId) on both
+// sides - every table here carries that column.
+let Activity =
+    union
+        (EntraIdSignInEvents
+        | where Timestamp between (LookbackStart .. LookbackEnd)
+        | where isnotempty(AccountUpn)
+        | extend ActorKey = tolower(AccountUpn)
+        | join kind=inner (Window) on ActorKey
+        | where Timestamp >= WindowStart and Timestamp <= WindowEnd
+        | project Timestamp, Source = "EntraSignIn", ActorKey, Application,
+                  Operation = strcat("SignIn err=", tostring(ErrorCode)),
+                  Object = ResourceDisplayName, IPAddress, Country, UserAgent),
+        (CloudAppEvents
+        | where Timestamp between (LookbackStart .. LookbackEnd)
+        | where isnotempty(AccountId)
+        | extend ActorKey = tolower(AccountId)
+        | join kind=inner (Window) on ActorKey
+        | where Timestamp >= WindowStart and Timestamp <= WindowEnd
+        | project Timestamp, Source = "CloudApp", ActorKey, Application,
+                  Operation = ActionType, Object = ObjectName, IPAddress,
+                  Country = CountryCode, UserAgent),
+        (IdentityLogonEvents
+        | where Timestamp between (LookbackStart .. LookbackEnd)
+        | where isnotempty(AccountUpn)
+        | extend ActorKey = tolower(AccountUpn)
+        | join kind=inner (Window) on ActorKey
+        | where Timestamp >= WindowStart and Timestamp <= WindowEnd
+        | project Timestamp, Source = "IdentityLogon", ActorKey, Application,
+                  Operation = ActionType, Object = DeviceName, IPAddress,
+                  Country = Location, UserAgent = strcat(""));
+Activity
+| summarize Events      = count(),
+            FirstSeen   = min(Timestamp),
+            LastSeen    = max(Timestamp),
+            Objects     = make_set(Object, 10),
+            Ips         = make_set(IPAddress, 5),
+            Countries   = make_set(Country, 5),
+            UserAgents  = make_set(UserAgent, 3)
+          by Source, Application, Operation
+| order by Events desc
+| take 200

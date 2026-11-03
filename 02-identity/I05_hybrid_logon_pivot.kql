@@ -1,5 +1,5 @@
 // ============================================================================
-// PACK: Identity  |  QUERY: I07 - Hybrid / on-prem authentication pivot (IdentityLogonEvents)
+// PACK: Identity  |  QUERY: I05 - Hybrid / on-prem authentication pivot (IdentityLogonEvents)
 // Tables: IdentityLogonEvents
 // Inputs: InputAccountUpn, InputIpAddress, InputDeviceName (all OPTIONAL)
 // Perf:   time-bounded with 'between'; entity filters before summarize/joins.

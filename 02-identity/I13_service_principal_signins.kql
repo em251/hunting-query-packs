@@ -1,5 +1,5 @@
 // ============================================================================
-// PACK: Identity  |  QUERY: I06 - Service principal / managed identity sign-ins (app compromise)
+// PACK: Identity  |  QUERY: I13 - Service principal / managed identity sign-ins (app compromise)
 // Tables: EntraIdSpnSignInEvents
 // Inputs: InputServicePrincipalName, InputIpAddress (both OPTIONAL)
 // Perf:   time-bounded with 'between'; entity filters before summarize/joins.

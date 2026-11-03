@@ -3,7 +3,10 @@
 // ============================================================================
 let LookbackStart = ago(7d);
 let LookbackEnd   = now();
-let Threshold     = 5;                  // generic "suspicious enough" count
+let Threshold     = 5;
+let SessionTailHours = 6;               // I01-I03: how long after the last
+                                        // anchored sign-in still counts as part
+                                        // of the session                  // generic "suspicious enough" count
 
 // --- primary entity ---------------------------------------------------------
 let InputAccountUpn      = "";          // user, e.g. "jdoe@contoso.com"

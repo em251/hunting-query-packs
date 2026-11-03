@@ -1,5 +1,5 @@
 // ============================================================================
-// PACK: Identity  |  QUERY: I13 - Endpoint logon pivot for a user or host (DeviceLogonEvents)
+// PACK: Identity  |  QUERY: I08 - Endpoint logon pivot for a user or host (DeviceLogonEvents)
 // Tables: DeviceLogonEvents
 // Inputs: InputAccountUpn (matched against AccountName - this table carries
 //         sAMAccountName/SID, not UPN), InputDeviceName, InputIpAddress
@@ -9,7 +9,7 @@
 //         AADSignInEventsBeta table is not used anywhere in this pack).
 // ============================================================================
 // The endpoint side of an identity incident: which device was logged into, how
-// (LogonType), from where, and whether it failed. Pairs with I07.
+// (LogonType), from where, and whether it failed. Pairs with I05.
 
 let LookbackStart = ago(7d);
 let LookbackEnd   = now();

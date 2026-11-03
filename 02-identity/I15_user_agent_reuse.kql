@@ -1,5 +1,5 @@
 // ============================================================================
-// PACK: Identity  |  QUERY: I12 - Client fingerprint reuse (one UA across many accounts)
+// PACK: Identity  |  QUERY: I15 - Client fingerprint reuse (one UA across many accounts)
 // Tables: EntraIdSignInEvents
 // Inputs: InputUserAgent (REQUIRED), Threshold (default 3)
 // Perf:   time-bounded with 'between'; entity filters before summarize/joins.

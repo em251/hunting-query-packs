@@ -1,5 +1,5 @@
 // ============================================================================
-// PACK: Identity  |  QUERY: I03 - Session / token replay: one session id from many IPs or countries
+// PACK: Identity  |  QUERY: I04 - Session / token replay: one session id from many IPs or countries
 // Tables: EntraIdSignInEvents
 // Inputs: InputSessionId, InputAccountUpn (both OPTIONAL), Threshold (default 3)
 // Perf:   time-bounded with 'between'; entity filters before summarize/joins.

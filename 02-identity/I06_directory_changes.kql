@@ -1,5 +1,5 @@
 // ============================================================================
-// PACK: Identity  |  QUERY: I08 - Directory changes touching the account (password, groups, enable/disable)
+// PACK: Identity  |  QUERY: I06 - Directory changes touching the account (password, groups, enable/disable)
 // Tables: IdentityDirectoryEvents
 // Inputs: InputAccountUpn (REQUIRED)
 // Perf:   time-bounded with 'between'; entity filters before summarize/joins.

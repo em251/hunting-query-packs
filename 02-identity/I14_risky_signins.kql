@@ -1,5 +1,5 @@
 // ============================================================================
-// PACK: Identity  |  QUERY: I10 - Risky sign-ins and Conditional Access outcomes
+// PACK: Identity  |  QUERY: I14 - Risky sign-ins and Conditional Access outcomes
 // Tables: EntraIdSignInEvents
 // Inputs: InputAccountUpn (OPTIONAL), Threshold (default 4)
 // Perf:   time-bounded with 'between'; entity filters before summarize/joins.
