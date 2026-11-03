@@ -1,0 +1,49 @@
+# P11 — Alert-driven pivot: phishing alerts -> message -> recipients
+
+**Pack:** Phishing  
+**Tables:** AlertInfo, AlertEvidence, EmailEvents  
+**Inputs:** InputNetworkMessageId or InputAlertTitle (OPTIONAL)  
+**Schema:** every column below exists in the current Defender XDR advanced hunting schema (learn.microsoft.com/defender-xdr/advanced-hunting-*-table).  
+**Performance:** time-bounded with 'between', filters pushed before joins/summarize.
+
+Starts from the alert, keeps only evidence rows that actually carry a
+NetworkMessageId (no guessing at EntityType strings), then re-expands the
+message to every recipient.
+
+```kql
+let LookbackStart = ago(14d);
+let LookbackEnd   = now();
+let InputNetworkMessageId = "";
+let InputAlertTitle       = "";
+
+let PhishingAlerts =
+    AlertInfo
+    | where Timestamp between (LookbackStart .. LookbackEnd)
+    | where ServiceSource has "Office 365"
+    | where isempty(InputAlertTitle) or Title has InputAlertTitle
+    | project AlertId, AlertTime = Timestamp, Title, Severity, Category,
+              DetectionSource, ServiceSource, AttackTechniques;
+let MessageEvidence =
+    AlertEvidence
+    | where Timestamp between (LookbackStart .. LookbackEnd)
+    | where isnotempty(NetworkMessageId)
+    | where isempty(InputNetworkMessageId) or NetworkMessageId =~ InputNetworkMessageId
+    // AccountUpn on mail evidence is the mailbox user, not the sender - the
+    // sender is recovered from EmailEvents in the join below.
+    | project AlertId, NetworkMessageId, EmailSubject, EvidenceAccountUpn = AccountUpn,
+              EvidenceAccountName = AccountName, EvidenceRemoteUrl = RemoteUrl,
+              EvidenceFileName = FileName, EvidenceSha256 = SHA256, EntityType, EvidenceRole;
+PhishingAlerts
+| join kind=inner MessageEvidence on AlertId
+| join kind=leftouter (
+    EmailEvents
+    | where Timestamp between (LookbackStart .. LookbackEnd)
+    | summarize arg_max(Timestamp, *) by NetworkMessageId, RecipientEmailAddress
+    | project NetworkMessageId, RecipientEmailAddress, SenderFromAddress,
+              Subject, DeliveryAction, DeliveryLocation, ThreatTypes, DetectionMethods)
+    on NetworkMessageId
+| project-reorder AlertTime, Title, Severity, NetworkMessageId, EmailSubject, RecipientEmailAddress,
+                  DeliveryAction, DeliveryLocation, ThreatTypes, DetectionSource
+| order by AlertTime desc
+| take 500
+```
