@@ -25,3 +25,8 @@ let InputStorageAccount  = "";   // CloudStorageAggregatedEvents.StorageAccount
 let InputDnsQuery        = "";   // CloudDnsEvents.DnsQuery
 let InputHostName        = "";   // Cloud*Events.HostName
 let InputProcessName     = "";   // CloudProcessEvents.ProcessName
+
+// --- nested payload / entity (see C14 before hard-coding any RawEventData path)
+let InputPrincipal       = "";   // CloudAuditEvents actor, resolved per platform in C06
+let InputActionType      = "";   // CloudAppEvents.ActionType, e.g. "New-InboxRule"
+let InputRuleDestination = "";   // mailbox rule destination (address or domain)

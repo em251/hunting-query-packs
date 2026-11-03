@@ -1,21 +1,26 @@
 // ============================================================================
-// PACK: Cloud  |  QUERY: C03 - Mailbox rule / delegation persistence (exchange online)
+// PACK: Cloud  |  QUERY: C03 - Mailbox rule / delegation persistence (with rule configuration)
 // Tables: CloudAppEvents
-// Inputs: InputAccountId, InputObjectName (both OPTIONAL)
+// Inputs: InputAccountId, InputObjectName, InputRuleDestination (all OPTIONAL)
 // Perf:   time-bounded with 'between'; entity filters before summarize/joins.
 // Schema: verified against the current Defender XDR advanced hunting schema.
-//         CloudAppEvents has NO AccountUpn column - the actor is AccountId
-//         (usually the UPN) plus AccountObjectId. CloudAuditEvents has no actor
-//         column at all: the principal lives inside RawEventData.
+// Payload: nested RawEventData paths are grounded in the source payload docs -
+//          Office 365 audit records + Exchange cmdlet parameters (RawEventData
+//          .Parameters), AWS CloudTrail userIdentity, GCP AuditLog protoPayload,
+//          Kubernetes audit event, Azure Activity Log schema.
 // ============================================================================
 // Post-compromise persistence in Exchange Online: forwarding rules, hidden
-// rules, and mailbox delegation. The action list is a variable on purpose -
-// add tenant-specific operations without editing the logic.
+// rules, mailbox delegation. The valuable column is RawEventData.Parameters -
+// the PowerShell parameter list of the operation, which is where the attacker's
+// forwarding destination actually lives.
+// This is the pattern Microsoft's own alert-grading playbook for suspicious
+// inbox forwarding rules uses (RuleConfig = RawEventData.Parameters).
 
 let LookbackStart = ago(14d);
 let LookbackEnd   = now();
-let InputAccountId  = "";
-let InputObjectName = "";
+let InputAccountId       = "";
+let InputObjectName      = "";
+let InputRuleDestination = "";   // external address or domain seen in the rule
 let MailboxPersistenceActions = dynamic([
     "New-InboxRule", "Set-InboxRule", "UpdateInboxRules", "Remove-InboxRule",
     "Set-Mailbox", "Add-MailboxPermission", "Remove-MailboxPermission",
@@ -28,8 +33,11 @@ CloudAppEvents
 | where ActionType has_any (MailboxPersistenceActions)
 | where (isempty(InputAccountId)  or AccountId =~ InputAccountId)
     and (isempty(InputObjectName) or ObjectName has InputObjectName)
+| extend RuleConfig = tostring(RawEventData.Parameters)
+| where isempty(InputRuleDestination) or RuleConfig has InputRuleDestination
 | project Timestamp, ActionType, AccountId, AccountDisplayName, IPAddress,
-          CountryCode, UserAgent, IsAdminOperation, ObjectType, ObjectName,
-          RuleParameters = RawEventData
+          CountryCode, City, Isp, UserAgent, IsAdminOperation, IsImpersonated,
+          ObjectType, ObjectName, RuleConfig = RawEventData.Parameters,
+          RawEventData
 | order by Timestamp desc
 | take 500

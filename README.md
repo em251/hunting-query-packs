@@ -97,7 +97,9 @@ sign-in, session/token, hybrid auth, directory changes.
 
 ### Cloud - `03-cloud/`
 
-SaaS activity, OAuth consent, cloud audit/KV/storage/DNS/process, Graph.
+SaaS activity, OAuth consent, cloud audit/KV/storage/DNS/process, Graph, plus
+nested `RawEventData` payload work (rule parameters, per-platform principals,
+first-seen attributes).
 
 | File | Query |
 | --- | --- |
@@ -113,6 +115,10 @@ SaaS activity, OAuth consent, cloud audit/KV/storage/DNS/process, Graph.
 | `C10_cloud_process_execution.kql` | Cloud process execution with suspicious command lines |
 | `C11_graph_api_audit.kql` | Microsoft Graph API audit: app, scopes, failures |
 | `C12_cross_cloud_ip_pivot.kql` | One IP across every cloud table (union pivot) |
+| `C13_user_activity_baseline.kql` | Is this normal for the user? 30-day baseline by ISP / country / UA |
+| `C14_raweventdata_key_explorer.kql` | RawEventData key explorer - discover the payload shape in your tenant |
+| `C15_first_seen_attributes.kql` | First-time-seen attributes for a user (`LastSeenForUser` < 0) |
+| `C16_mailbox_rule_parameter_pivot.kql` | Rule parameter pivot: forwarding destinations across the tenant |
 
 ### Malware - `04-malware/`
 
@@ -163,6 +169,32 @@ Two Falcon-specific facts the queries depend on:
 * `ProcessRollup2` has no parent command line. It carries `ParentBaseFileName` and
   `ParentProcessId`; resolving the parent's command line needs the join in `CF06`
   (key = child's `ParentProcessId`, field = parent's `TargetProcessId`).
+
+## Cloud pack: nested payloads (`RawEventData`)
+
+`CloudAppEvents.RawEventData` and `CloudAuditEvents.RawEventData` are the source
+records, and the evidence usually lives inside them rather than in the typed
+columns. Microsoft documents the column but not the JSON, so the paths used here
+are grounded in the *source* payload schemas:
+
+| Path | Source of truth |
+| --- | --- |
+| `RawEventData.Parameters` (mailbox rules) | Office 365 audit record; Microsoft's own inbox-forwarding playbook filters `RuleConfig has <address>` on it, and the names are `New-InboxRule` / `Set-Mailbox` cmdlet parameters |
+| `RawEventData.userIdentity.{arn,accountId,accessKeyId,type}` | AWS CloudTrail record contents |
+| `RawEventData.protoPayload.{authenticationInfo.principalEmail,methodName,status}` | GCP AuditLog |
+| `RawEventData.identity.claims`, `properties.eventName` | Azure Activity Log schema |
+| `RawEventData.user.username`, `verb`, `responseStatus` | Kubernetes audit event |
+
+Because the shape varies by connector, `C14` enumerates the keys actually
+present in your tenant (`bag_keys` + sample values) before you hard-code
+anything - and `C06`/`C16` coalesce across key casings rather than assuming one.
+
+`CloudAppEvents` also carries two anomaly columns that are easy to miss:
+
+* `UncommonForUser` - `[]` = enriched, nothing unusual; `""` = not enriched;
+  populated = the attributes rare for this user.
+* `LastSeenForUser` - bag of attribute -> days since last seen. **Negative means
+  first time ever**; `C15` expands it into rows.
 
 ## Campaign scoping in the phishing pack (P10 / P12)
 

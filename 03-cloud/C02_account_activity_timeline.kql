@@ -24,8 +24,14 @@ CloudAppEvents
                                    or AccountDisplayName has InputAccountId)
     and (isempty(InputApplication) or Application =~ InputApplication)
     and (isempty(InputObjectName)  or ObjectName has InputObjectName)
-| project Timestamp, Application, ActionType, ActivityType, AccountId, IPAddress,
-          CountryCode, City, Isp, UserAgent, IsAdminOperation, IsAnonymousProxy,
-          ObjectType, ObjectName, ObjectId, SessionData, RawEventData
+// UncommonForUser / LastSeenForUser are the table's own anomaly signals: '[]'
+// means enriched and nothing unusual, '' means not enriched, a populated list
+// names the attributes that are rare for this user.
+| project Timestamp, Application, ActionType, ActivityType, AccountId,
+          AccountDisplayName, IPAddress, CountryCode, City, Isp, UserAgent,
+          UserAgentTags, IPTags, IsAdminOperation, IsAnonymousProxy,
+          IsExternalUser, IsImpersonated, AuditSource, ObjectType, ObjectName,
+          ObjectId, ActivityObjects, UncommonForUser, LastSeenForUser,
+          SessionData, RawEventData
 | order by Timestamp asc
 | take 1000
