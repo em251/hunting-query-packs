@@ -1,5 +1,5 @@
 // ============================================================================
-// PACK: Phishing  |  QUERY: P02 - Campaign discovery by subject / sender / recipient attributes
+// PACK: Phishing  |  QUERY: P04 - Campaign discovery by subject / sender / recipient attributes
 // Tables: EmailEvents
 // Inputs: InputSubjectContains, InputSenderFrom, InputSenderDomain, InputSenderIp, InputRecipientDomain (all OPTIONAL)
 // Perf:   time-bounded with 'between', filters pushed before joins/summarize.

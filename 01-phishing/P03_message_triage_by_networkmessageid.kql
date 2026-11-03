@@ -1,5 +1,5 @@
 // ============================================================================
-// PACK: Phishing  |  QUERY: P01 - Full message triage by NetworkMessageId
+// PACK: Phishing  |  QUERY: P03 - Full message triage by NetworkMessageId
 // Tables: EmailEvents, EmailAttachmentInfo, EmailUrlInfo
 // Inputs: InputNetworkMessageId (REQUIRED)
 // Perf:   time-bounded with 'between', filters pushed before joins/summarize.

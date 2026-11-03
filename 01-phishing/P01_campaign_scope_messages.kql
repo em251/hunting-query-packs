@@ -1,13 +1,13 @@
 // ============================================================================
-// PACK: Phishing  |  QUERY: P12 - Campaign scope at message level (same OR logic as P10)
+// PACK: Phishing  |  QUERY: P01 - Campaign blast radius: scope at message level (OR selectors)
 // Tables: EmailEvents, EmailAttachmentInfo, EmailUrlInfo, UrlClickEvents
-// Inputs: same selector block as P10
+// Inputs: same selector block as P02
 // Perf:   one bounded scan per branch, ids deduped once, then a single join.
 // Schema: verified against the current Defender XDR advanced hunting schema.
 // ============================================================================
-// Message-level companion to P10: same OR selectors, but one row per message
+// Message-level companion to P02: same OR selectors, but one row per message
 // with why it is in scope, where it landed, and how many users clicked it.
-// Use this to sanity-check the scope before you act on the P10 worklist.
+// Use this to sanity-check the scope before you act on the P02 worklist.
 
 let LookbackStart = ago(7d);
 let LookbackEnd   = now();

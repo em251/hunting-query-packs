@@ -1,5 +1,5 @@
 // ============================================================================
-// PACK: Phishing  |  QUERY: P07 - Authentication failures, envelope/header mismatch, first contact
+// PACK: Phishing  |  QUERY: P09 - Authentication failures, envelope/header mismatch, first contact
 // Tables: EmailEvents
 // Inputs: InputSenderDomain, InputRecipientDomain, InputThreatType (all OPTIONAL)
 // Perf:   time-bounded with 'between', filters pushed before joins/summarize.

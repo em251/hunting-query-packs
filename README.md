@@ -57,22 +57,24 @@ listing the full variable set for that alert type - copy it, do not run it.
 
 ### Phishing - `01-phishing/`
 
-email-borne attacks: message triage, campaign scope, click telemetry.
+email-borne attacks: message triage, campaign scope, click telemetry. Ordered
+by how investigations actually run - blast radius first, then interaction, then
+the supporting pivots.
 
 | File | Query |
 | --- | --- |
-| `P01_message_triage_by_networkmessageid.kql` | Full message triage by NetworkMessageId |
-| `P02_search_by_subject_sender_recipient.kql` | Campaign discovery by subject / sender / recipient attributes |
-| `P03_attachment_scope_and_endpoint_landing.kql` | Attachment scope + endpoint landing (email -> device) |
-| `P04_click_telemetry_for_urls.kql` | Who clicked - UrlClickEvents joined back to the message |
-| `P05_cluster_expansion.kql` | Expand a campaign cluster (EmailClusterId) |
-| `P06_post_delivery_actions_and_current_state.kql` | Post-delivery actions (ZAP / purge) and current mailbox state |
-| `P07_authentication_and_spoof_signals.kql` | Authentication failures, envelope/header mismatch, first contact |
-| `P08_sender_infrastructure_reuse.kql` | Sender infrastructure reuse (same IP / Mail-From domain, many messages) |
-| `P09_alert_driven_phishing_pivot.kql` | Alert-driven pivot: phishing alerts -> message -> recipients |
-| `P10_impacted_users_remediation_list.kql` | Impacted users - clicks and delivery scoped by ANY selector (OR logic) |
-| `P11_lookalike_and_similar_domains.kql` | Lookalike / cousin domains for a brand or partner domain |
-| `P12_campaign_scope_messages.kql` | Campaign scope at message level (same OR logic as P10) |
+| `P01_campaign_scope_messages.kql` | Campaign blast radius: scope at message level (OR selectors) |
+| `P02_campaign_interaction_clicks.kql` | Campaign interaction: users who clicked, and what they clicked |
+| `P03_message_triage_by_networkmessageid.kql` | Full message triage by NetworkMessageId |
+| `P04_search_by_subject_sender_recipient.kql` | Campaign discovery by subject / sender / recipient attributes |
+| `P05_attachment_scope_and_endpoint_landing.kql` | Attachment scope + endpoint landing (email -> device) |
+| `P06_click_telemetry_for_urls.kql` | Who clicked - UrlClickEvents joined back to the message |
+| `P07_cluster_expansion.kql` | Expand a campaign cluster (EmailClusterId) |
+| `P08_post_delivery_actions_and_current_state.kql` | Post-delivery actions (ZAP / purge) and current mailbox state |
+| `P09_authentication_and_spoof_signals.kql` | Authentication failures, envelope/header mismatch, first contact |
+| `P10_sender_infrastructure_reuse.kql` | Sender infrastructure reuse (same IP / Mail-From domain, many messages) |
+| `P11_alert_driven_phishing_pivot.kql` | Alert-driven pivot: phishing alerts -> message -> recipients |
+| `P12_lookalike_and_similar_domains.kql` | Lookalike / cousin domains for a brand or partner domain |
 
 ### Identity - `02-identity/`
 

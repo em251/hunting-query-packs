@@ -1,5 +1,5 @@
 // ============================================================================
-// PACK: Phishing  |  QUERY: P08 - Sender infrastructure reuse (same IP / Mail-From domain, many messages)
+// PACK: Phishing  |  QUERY: P10 - Sender infrastructure reuse (same IP / Mail-From domain, many messages)
 // Tables: EmailEvents
 // Inputs: Threshold (default 3), InputThreatType (OPTIONAL)
 // Perf:   time-bounded with 'between', filters pushed before joins/summarize.

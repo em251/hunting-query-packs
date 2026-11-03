@@ -1,5 +1,5 @@
 // ============================================================================
-// PACK: Phishing  |  QUERY: P06 - Post-delivery actions (ZAP / purge) and current mailbox state
+// PACK: Phishing  |  QUERY: P08 - Post-delivery actions (ZAP / purge) and current mailbox state
 // Tables: EmailEvents, EmailPostDeliveryEvents
 // Inputs: InputNetworkMessageId (REQUIRED)
 // Perf:   time-bounded with 'between', filters pushed before joins/summarize.

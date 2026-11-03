@@ -1,5 +1,5 @@
 // ============================================================================
-// PACK: Phishing  |  QUERY: P04 - Who clicked - UrlClickEvents joined back to the message
+// PACK: Phishing  |  QUERY: P06 - Who clicked - UrlClickEvents joined back to the message
 // Tables: UrlClickEvents, EmailEvents
 // Inputs: InputUrlDomain, InputUrlContains, InputNetworkMessageId (all OPTIONAL)
 // Perf:   time-bounded with 'between', filters pushed before joins/summarize.

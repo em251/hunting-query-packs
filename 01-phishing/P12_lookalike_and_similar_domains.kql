@@ -1,5 +1,5 @@
 // ============================================================================
-// PACK: Phishing  |  QUERY: P11 - Lookalike / cousin domains for a brand or partner domain
+// PACK: Phishing  |  QUERY: P12 - Lookalike / cousin domains for a brand or partner domain
 // Tables: EmailEvents, EmailUrlInfo
 // Inputs: InputBrandDomain (REQUIRED, e.g. contoso.com)
 // Perf:   time-bounded with 'between', filters pushed before joins/summarize.

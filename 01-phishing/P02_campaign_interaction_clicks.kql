@@ -1,5 +1,5 @@
 // ============================================================================
-// PACK: Phishing  |  QUERY: P10 - Impacted users (campaign scope from ANY selector)
+// PACK: Phishing  |  QUERY: P02 - Campaign interaction: users who clicked, and what they clicked
 // Tables: EmailEvents, EmailAttachmentInfo, EmailUrlInfo, UrlClickEvents
 // Inputs: InputNetworkMessageId, InputEmailClusterId, InputSubjectContains,
 //         InputSenderFrom, InputSenderDomain, InputAttachmentName,
@@ -15,8 +15,16 @@
 // Click scope is deliberately wider than delivery scope: a click on a matching
 // URL counts even when the message attribute itself did not match.
 //
+// Clicks are NOT filtered by mailbox state. The click side joins UrlClickEvents
+// on NetworkMessageId only, and Impacted unions clickers with delivered
+// recipients - so a user whose message was quarantined, purged or ZAP'd after
+// the click still appears here. StillInMailbox is a reported column, not a
+// filter. The only ways a click is missed: the click fell outside LookbackStart,
+// or the tenant runs no Safe Links policy, in which case UrlClickEvents is empty
+// for everyone.
+//
 // Empty selectors contribute nothing - unlike the single-pivot queries in this
-// pack, an unfilled P10 returns no rows rather than the whole window. That is
+// pack, an unfilled P02 returns no rows rather than the whole window. That is
 // intentional: the answer is meaningless without a scope definition.
 
 let LookbackStart = ago(7d);

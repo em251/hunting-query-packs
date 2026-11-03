@@ -1,5 +1,5 @@
 // ============================================================================
-// PACK: Phishing  |  QUERY: P03 - Attachment scope + endpoint landing (email -> device)
+// PACK: Phishing  |  QUERY: P05 - Attachment scope + endpoint landing (email -> device)
 // Tables: EmailAttachmentInfo, EmailEvents, DeviceFileEvents
 // Inputs: InputAttachmentName, InputAttachmentSha256 (both OPTIONAL)
 // Perf:   time-bounded with 'between', filters pushed before joins/summarize.

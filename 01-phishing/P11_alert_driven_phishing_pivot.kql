@@ -1,5 +1,5 @@
 // ============================================================================
-// PACK: Phishing  |  QUERY: P09 - Alert-driven pivot: phishing alerts -> message -> recipients
+// PACK: Phishing  |  QUERY: P11 - Alert-driven pivot: phishing alerts -> message -> recipients
 // Tables: AlertInfo, AlertEvidence, EmailEvents
 // Inputs: InputNetworkMessageId or InputAlertTitle (OPTIONAL)
 // Perf:   time-bounded with 'between', filters pushed before joins/summarize.
