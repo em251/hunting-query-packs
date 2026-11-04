@@ -26,7 +26,15 @@ union
     (CloudAuditEvents
      | where Timestamp between (LookbackStart .. LookbackEnd)
      | where IPAddress == InputIpAddress
-     | project Timestamp, Source = "CloudAuditEvents", Actor = tostring(RawEventData.UserIdentity.Arn),
+     | project Timestamp, Source = "CloudAuditEvents", Actor = case(
+           DataSource =~ "AWS", tostring(RawEventData.userIdentity.arn),
+           DataSource =~ "GCP", tostring(RawEventData.protoPayload.authenticationInfo.principalEmail),
+           DataSource =~ "Azure", coalesce(
+               tostring(RawEventData.identity.claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn"]),
+               tostring(parse_json(tostring(RawEventData.identity.claims))["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn"]),
+               tostring(parse_json(tostring(RawEventData.identity.claims))["appid"]),
+               tostring(RawEventData.identity.authorization.evidence.principalId)),
+           tostring(RawEventData.user.username)),
                Detail = strcat(DataSource, " | ", OperationName), Resource = ResourceId),
     (CloudKeyVaultEvents
      | where Timestamp between (LookbackStart .. LookbackEnd)

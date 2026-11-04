@@ -177,6 +177,7 @@ been seen before" against a 30-day baseline, and triage the classic cloud alert
 | `V13_storage_auth.md` | Storage authentication type and volume |
 | `V14_control_plane.md` | Azure control-plane changes |
 | `V15_ip_blast_radius.md` | Everything this IP touched |
+| `V16_azure_identity_shape.md` | Azure identity payload shape (does the UPN claim resolve?) |
 
 ### CrowdStrike Falcon - `05-crowdstrike-falcon/`
 

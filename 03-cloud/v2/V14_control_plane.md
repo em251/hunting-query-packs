@@ -36,7 +36,12 @@ CloudAuditEvents
 | extend Principal = case(
       DataSource =~ "AWS", tostring(RawEventData.userIdentity.arn),
       DataSource =~ "GCP", tostring(RawEventData.protoPayload.authenticationInfo.principalEmail),
-      DataSource =~ "Azure", tostring(RawEventData.identity.claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn"]),
+      DataSource =~ "Azure", coalesce(
+          tostring(RawEventData.identity.claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn"]),
+          tostring(parse_json(tostring(RawEventData.identity.claims))["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn"]),
+          tostring(parse_json(tostring(RawEventData.identity.claims))["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"]),
+          tostring(parse_json(tostring(RawEventData.identity.claims))["appid"]),
+          tostring(RawEventData.identity.authorization.evidence.principalId)),
       tostring(RawEventData.user.username))
 | where isempty(InputPrincipal) or Principal has InputPrincipal
 | summarize Changes = count(), Principals = make_set(Principal, 10), Ips = make_set(IPAddress, 10),
