@@ -156,8 +156,9 @@ hash/name pivots, lineage, persistence, egress, lateral movement.
 ### Cloud v2 - `03-cloud/v2/`
 
 IR-workflow layer on the same tables: enumerate actions per account or per object,
-pivot action x actor, replay a user's timeline against an object, and answer "has
-this been seen before" against a 30-day baseline.
+pivot action x actor, replay a user's timeline against an object, answer "has this
+been seen before" against a 30-day baseline, and triage the classic cloud alert
+(new IP/ISP/UA, storage key read, blob activity) end to end.
 
 | File | Query |
 | --- | --- |
@@ -171,6 +172,11 @@ this been seen before" against a 30-day baseline.
 | `V08_admin_and_permission_changes.md` | Privilege surface: admin operations and permission changes |
 | `V09_app_initiated_activity.md` | App-initiated activity: what an app did on behalf of users |
 | `V10_activityobjects_shape.md` | What is actually inside ActivityObjects (shape discovery) |
+| `V11_storage_credential_operations.md` | Storage credential operations: list keys, regenerate, SAS |
+| `V12_first_seen_ip_isp_ua.md` | First-seen IP, ISP or user agent against a resource (30-day baseline) |
+| `V13_storage_auth_and_volume.md` | Storage data plane: how it was authenticated, how much moved |
+| `V14_azure_control_plane_changes.md` | Azure control plane: privilege, network and key configuration changes |
+| `V15_alert_ip_blast_radius.md` | Alert triage: everything one IP did across control plane, SaaS and Key Vault |
 
 ### CrowdStrike Falcon - `05-crowdstrike-falcon/`
 
