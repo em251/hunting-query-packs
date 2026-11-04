@@ -17,7 +17,6 @@ let Threshold     = 25;
 let InputAccountUpn = "";
 let InputDeviceName = "";
 let InputIpAddress  = "";
-
 IdentityQueryEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
 | where (isempty(InputAccountUpn) or AccountUpn =~ InputAccountUpn)

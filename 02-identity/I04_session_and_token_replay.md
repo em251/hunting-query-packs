@@ -16,7 +16,6 @@ let LookbackEnd   = now();
 let Threshold     = 3;
 let InputSessionId = "";
 let InputAccountUpn = "";
-
 let SuspiciousSessions =
     EntraIdSignInEvents
     | where Timestamp between (LookbackStart .. LookbackEnd)

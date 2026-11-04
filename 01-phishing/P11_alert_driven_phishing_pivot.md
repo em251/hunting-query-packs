@@ -15,7 +15,6 @@ let LookbackStart = ago(14d);
 let LookbackEnd   = now();
 let InputNetworkMessageId = "";
 let InputAlertTitle       = "";
-
 let PhishingAlerts =
     AlertInfo
     | where Timestamp between (LookbackStart .. LookbackEnd)

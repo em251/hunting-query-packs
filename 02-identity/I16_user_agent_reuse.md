@@ -15,7 +15,6 @@ let LookbackStart = ago(7d);
 let LookbackEnd   = now();
 let Threshold     = 3;
 let InputUserAgent = "";   // REQUIRED - paste the UA from the alert
-
 EntraIdSignInEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
 | where UserAgent has InputUserAgent

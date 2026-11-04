@@ -14,7 +14,6 @@ let LookbackStart = ago(14d);
 let LookbackEnd   = now();
 let InputBrandDomain = "";   // REQUIRED - e.g. "contoso.com"
 let BrandToken = tostring(split(InputBrandDomain, ".")[0]);   // "contoso"
-
 let MailSenders =
     EmailEvents
     | where Timestamp between (LookbackStart .. LookbackEnd)

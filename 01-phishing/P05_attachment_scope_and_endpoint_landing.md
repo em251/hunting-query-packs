@@ -15,7 +15,6 @@ let LookbackStart = ago(7d);
 let LookbackEnd   = now();
 let InputAttachmentName   = "";   // e.g. "invoice.htm"
 let InputAttachmentSha256 = "";
-
 let TargetedAttachments =
     EmailAttachmentInfo
     | where Timestamp between (LookbackStart .. LookbackEnd)

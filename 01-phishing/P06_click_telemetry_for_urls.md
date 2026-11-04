@@ -15,7 +15,6 @@ let LookbackEnd   = now();
 let InputUrlDomain        = "";
 let InputUrlContains      = "";
 let InputNetworkMessageId = "";
-
 let Clicks =
     UrlClickEvents
     | where Timestamp between (LookbackStart .. LookbackEnd)

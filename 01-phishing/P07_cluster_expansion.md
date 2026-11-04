@@ -13,7 +13,6 @@ infrastructure the cluster shares (sender IPs / domains / URL domains).
 let LookbackStart = ago(7d);
 let LookbackEnd   = now();
 let InputEmailClusterId = "";   // REQUIRED - numeric string from P04
-
 let ClusterMessages =
     EmailEvents
     | where Timestamp between (LookbackStart .. LookbackEnd)

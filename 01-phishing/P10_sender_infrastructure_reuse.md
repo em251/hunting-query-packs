@@ -14,7 +14,6 @@ let LookbackStart = ago(7d);
 let LookbackEnd   = now();
 let Threshold     = 3;
 let InputThreatType = "";   // e.g. "Phish"
-
 let SuspiciousMail =
     EmailEvents
     | where Timestamp between (LookbackStart .. LookbackEnd)

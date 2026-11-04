@@ -3,123 +3,70 @@
 **Pack:** Identity  
 **Tables:** EntraIdSignInEvents, CloudAppEvents, IdentityLogonEvents  
 **Inputs:** InputSessionId / InputCorrelationId / InputIpAddress / InputAccountUpn / InputMcasSessionId (fill at least one) + SessionTailHours  
-**Schema:** verified against the current Defender XDR advanced hunting schema.  
-**Performance:** same anchor as I01; every event in order rather than aggregated.
+**Performance:** no join. The anchors collapse to one scalar time window plus a small account set; each table semi-joins (`in`) that set inside the window only, so the scan covers hours rather than the whole lookback.
 
-Same anchor and account scope as I01, but every event in order - the "walk me
-through what happened with this user" view. Run I01 first to size it.
+Same anchor, window and account scope as I01, but every event in order — the "walk me through what this user did" view. Run I01 first to size it, then this to read it. `MatchBasis` shows whether a row came from the derived window, a session id, or the source IP.
+
 
 ```kql
 let LookbackStart = ago(7d);
-let LookbackEnd   = now();
-let SessionTailHours = 6;             // activity considered part of the session
-
-// --- anchors: fill any one, they are OR conditions ------------------------
-let InputSessionId      = "";         // EntraIdSignInEvents.SessionId
-let InputCorrelationId  = "";         // EntraIdSignInEvents.CorrelationId
-let InputIpAddress      = "";         // sign-in source IP
-let InputAccountUpn     = "";         // the account under investigation
-let InputMcasSessionId  = "";         // CloudAppEvents.SessionData.InLineSessionId
-                                      // (Defender for Cloud Apps inline session -
-                                      //  a DIFFERENT id space from the Entra one)
-
-// --- anchor: the sign-in(s) matching any identifier, per account ----------
+let LookbackEnd = now();
+let SessionTailHours = 6;
+let InputSessionId = "";
+let InputCorrelationId = "";
+let InputIpAddress = "";
+let InputAccountUpn = "";
+let InputMcasSessionId = "";
 let Anchor =
     EntraIdSignInEvents
     | where Timestamp between (LookbackStart .. LookbackEnd)
-    | where (isnotempty(InputSessionId)     and SessionId =~ InputSessionId)
+    | where (isnotempty(InputSessionId) and SessionId =~ InputSessionId)
          or (isnotempty(InputCorrelationId) and CorrelationId =~ InputCorrelationId)
-         or (isnotempty(InputIpAddress)     and IPAddress == InputIpAddress)
-         or (isnotempty(InputAccountUpn)    and AccountUpn =~ InputAccountUpn)
-    | summarize FirstEvent = min(Timestamp),
-                LastEvent  = max(Timestamp),
-                SignIns    = count(),
-                Ips        = make_set(IPAddress, 10),
-                UserAgents = make_set(UserAgent, 5),
-                Apps       = make_set(Application, 15)
+         or (isnotempty(InputIpAddress) and IPAddress == InputIpAddress)
+         or (isnotempty(InputAccountUpn) and AccountUpn =~ InputAccountUpn)
+    | summarize FirstEvent = min(Timestamp), LastEvent = max(Timestamp), SignIns = count(),
+                Ips = make_set(IPAddress, 10), UserAgents = make_set(UserAgent, 5),
+                Apps = make_set(Application, 15)
               by AccountUpn, AccountObjectId;
-let Window =
-    Anchor
-    | extend WindowStart = FirstEvent - 1h,
-             WindowEnd   = LastEvent + SessionTailHours * 1h
-    | project ActorKey = tolower(AccountUpn), WindowStart, WindowEnd;
-
-// Scope = the account (the tent of the investigation). Inside that account the
-// rows come from ANY of: the derived session window, the Entra session id, the
-// Entra correlation id, the source IP, or the Defender for Cloud Apps inline
-// session id. MatchBasis tells you which anchor pulled each row in.
-//
-// The session id reaches CloudAppEvents through the payload, because there is no
-// typed column for it:
-//   RawEventData.AppAccessContext.AADSessionId - "the Microsoft Entra SessionId
-//      of the Entra sign-in that was performed by the app on behalf of the user"
-//   RawEventData.SessionId                    - Exchange mailbox session (its own
-//      id space; will not equal an Entra session id)
-//   RawEventData.CorrelationId                - workload correlation id
-//   SessionData.InLineSessionId               - MCAS session-control id (typed
-//      column, but a separate id space again - use InputMcasSessionId for it)
+// one window for the whole investigation instead of a per-account join: the
+// anchors define both ends, so anything they reference is inside it already
+let SessionStart = toscalar(Anchor | summarize min(FirstEvent)) - 1h;
+let SessionEnd = toscalar(Anchor | summarize max(LastEvent)) + SessionTailHours * 1h;
+let Accounts = Anchor | project ActorKey = tolower(AccountUpn);
 let Activity =
     union
         (EntraIdSignInEvents
-        | where Timestamp between (LookbackStart .. LookbackEnd)
-        | where isnotempty(AccountUpn)
+        | where Timestamp between (SessionStart .. SessionEnd)
         | extend ActorKey = tolower(AccountUpn)
-        | join kind=inner (Window) on ActorKey
-        | where (Timestamp >= WindowStart and Timestamp <= WindowEnd)
-             or (isnotempty(InputSessionId)     and SessionId =~ InputSessionId)
-             or (isnotempty(InputCorrelationId) and CorrelationId =~ InputCorrelationId)
-             or (isnotempty(InputIpAddress)     and IPAddress == InputIpAddress)
-        | extend MatchBasis = case(
-              isnotempty(InputCorrelationId) and CorrelationId =~ InputCorrelationId, "correlationId",
-              isnotempty(InputSessionId)     and SessionId =~ InputSessionId,         "sessionId",
-              isnotempty(InputIpAddress)     and IPAddress == InputIpAddress,         "sourceIp",
-              "account+window")
+        | where isnotempty(ActorKey) and ActorKey in (Accounts)
         | project Timestamp, Source = "EntraSignIn", ActorKey, Application,
                   Operation = strcat("SignIn err=", tostring(ErrorCode)),
-                  Object = ResourceDisplayName, IPAddress, Country, UserAgent,
-                  MatchBasis),
+                  Object = ResourceDisplayName, IPAddress, Country, UserAgent),
         (CloudAppEvents
-        | where Timestamp between (LookbackStart .. LookbackEnd)
-        | where isnotempty(AccountId)
-        | extend ActorKey              = tolower(AccountId),
-                 AADSessionId          = tostring(RawEventData.AppAccessContext.AADSessionId),
-                 WorkloadSessionId     = tostring(RawEventData.SessionId),
-                 WorkloadCorrelationId = tostring(RawEventData.CorrelationId),
-                 InLineSessionId       = tostring(SessionData.InLineSessionId)
-        | join kind=inner (Window) on ActorKey
-        | where (Timestamp >= WindowStart and Timestamp <= WindowEnd)
-             or (isnotempty(InputSessionId)
-                 and (AADSessionId =~ InputSessionId or WorkloadSessionId =~ InputSessionId))
-             or (isnotempty(InputCorrelationId) and WorkloadCorrelationId =~ InputCorrelationId)
-             or (isnotempty(InputMcasSessionId) and InLineSessionId =~ InputMcasSessionId)
-             or (isnotempty(InputIpAddress)     and IPAddress == InputIpAddress)
-        | extend MatchBasis = case(
-              isnotempty(InputSessionId)      and AADSessionId =~ InputSessionId,          "AADSessionId",
-              isnotempty(InputSessionId)      and WorkloadSessionId =~ InputSessionId,     "workloadSessionId",
-              isnotempty(InputCorrelationId)  and WorkloadCorrelationId =~ InputCorrelationId, "workloadCorrelationId",
-              isnotempty(InputMcasSessionId)  and InLineSessionId =~ InputMcasSessionId,   "mcasInlineSessionId",
-              isnotempty(InputIpAddress)      and IPAddress == InputIpAddress,             "sourceIp",
-              "account+window")
+        | where Timestamp between (SessionStart .. SessionEnd)
+        | extend ActorKey = tolower(AccountId)
+        | where isnotempty(ActorKey) and ActorKey in (Accounts)
         | project Timestamp, Source = "CloudApp", ActorKey, Application,
                   Operation = ActionType, Object = ObjectName, IPAddress,
-                  Country = CountryCode, UserAgent, MatchBasis),
+                  Country = CountryCode, UserAgent,
+                  AADSessionId = tostring(RawEventData.AppAccessContext.AADSessionId),
+                  WorkloadSessionId = tostring(RawEventData.SessionId),
+                  InLineSessionId = tostring(SessionData.InLineSessionId)),
         (IdentityLogonEvents
-        | where Timestamp between (LookbackStart .. LookbackEnd)
-        | where isnotempty(AccountUpn)
+        | where Timestamp between (SessionStart .. SessionEnd)
         | extend ActorKey = tolower(AccountUpn)
-        | join kind=inner (Window) on ActorKey
-        | where (Timestamp >= WindowStart and Timestamp <= WindowEnd)
-             or (isnotempty(InputIpAddress) and IPAddress == InputIpAddress)
-        | extend MatchBasis = case(
-              isnotempty(InputIpAddress) and IPAddress == InputIpAddress, "sourceIp",
-              "account+window")
+        | where isnotempty(ActorKey) and ActorKey in (Accounts)
         | project Timestamp, Source = "IdentityLogon", ActorKey, Application,
                   Operation = ActionType, Object = DeviceName, IPAddress,
-                  Country = Location, UserAgent = strcat(""), MatchBasis);
-
+                  Country = Location, UserAgent = strcat(""));
 Activity
-| project-reorder Timestamp, Source, Application, Operation, Object, IPAddress,
-                  Country, MatchBasis
+| extend MatchBasis = case(
+      isnotempty(InputSessionId) and AADSessionId =~ InputSessionId, "AADSessionId",
+      isnotempty(InputSessionId) and WorkloadSessionId =~ InputSessionId, "workloadSessionId",
+      isnotempty(InputMcasSessionId) and InLineSessionId =~ InputMcasSessionId, "mcasInlineSessionId",
+      isnotempty(InputIpAddress) and IPAddress == InputIpAddress, "sourceIp",
+      "account+window")
+| project-reorder Timestamp, Source, Application, Operation, Object, IPAddress, Country, MatchBasis
 | order by Timestamp asc
 | take 2000
 ```

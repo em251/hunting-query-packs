@@ -13,7 +13,6 @@ Use this to sanity-check the scope before you act on the P02 worklist.
 ```kql
 let LookbackStart = ago(7d);
 let LookbackEnd   = now();
-
 let InputNetworkMessageId = "";
 let InputEmailClusterId   = "";
 let InputSubjectContains  = "";
@@ -23,7 +22,6 @@ let InputAttachmentName   = "";
 let InputAttachmentSha256 = "";
 let InputUrlContains      = "";
 let InputUrlDomain        = "";
-
 let ScopeByMessageId =
     EmailEvents
     | where Timestamp between (LookbackStart .. LookbackEnd)
@@ -67,7 +65,6 @@ let ScopeByClickedUrl =
     | where (isnotempty(InputUrlContains) and Url has InputUrlContains)
          or (isnotempty(InputUrlDomain)   and Url has InputUrlDomain)
     | project NetworkMessageId | extend Match = "UrlClicked";
-
 let Scope =
     union ScopeByMessageId, ScopeByCluster, ScopeBySubject, ScopeBySender,
           ScopeBySenderDomain, ScopeByAttachment, ScopeByHtmlUrls, ScopeByClickedUrl

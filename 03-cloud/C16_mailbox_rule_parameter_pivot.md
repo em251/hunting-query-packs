@@ -4,7 +4,7 @@
 **Tables:** CloudAppEvents  
 **Inputs:** InputRuleDestination, InputAccountId (both OPTIONAL)  
 **Schema:** verified against the current Defender XDR advanced hunting schema.  
-**Performance:** time-bounded with 'between'; entity filters before summarize/joins.
+**Performance:** 7-day default; five columns projected before the `mv-expand`, so only rules that carry parameters reach the expand.
 
 Companion to C03. Expands RawEventData.Parameters (the PowerShell parameter
 list of the mailbox operation) into name/value rows and pivots on the
@@ -14,7 +14,7 @@ Parameter names are the documented Exchange cmdlet parameters
 expand, which is why C03 stays as the unfiltered event list.
 
 ```kql
-let LookbackStart = ago(14d);
+let LookbackStart = ago(7d);
 let LookbackEnd   = now();
 let InputRuleDestination = "";
 let InputAccountId       = "";
@@ -23,13 +23,13 @@ let RuleParameterNames = dynamic([
     "SubjectContainsWords", "BodyContainsWords", "DeleteMessage",
     "MoveToFolder", "MarkAsRead", "StopProcessingRules", "Name", "Enabled"
 ]);
-
 CloudAppEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
 | where Application =~ "Microsoft Exchange Online"
 | where ActionType has_any ("New-InboxRule", "Set-InboxRule", "UpdateInboxRules", "Set-Mailbox")
 | where isempty(InputAccountId) or AccountId =~ InputAccountId
-| extend RuleParameters = RawEventData.Parameters
+| project Timestamp, AccountId, AccountDisplayName, ObjectName, IPAddress, CountryCode,
+          RuleParameters = RawEventData.Parameters
 | where isnotempty(RuleParameters)
 | mv-expand Parameter = RuleParameters
 // the Parameters bag is {Name,Value} in Office 365 audit records; coalesce

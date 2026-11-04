@@ -29,7 +29,6 @@ let LookbackEnd   = now();
 let InputSessionId     = "";   // an EntraIdSignInEvents.SessionId
 let InputMcasSessionId = "";   // a Defender for Cloud Apps inline session id
                                // (fill either one)
-
 let EntraSide =
     EntraIdSignInEvents
     | where Timestamp between (LookbackStart .. LookbackEnd)

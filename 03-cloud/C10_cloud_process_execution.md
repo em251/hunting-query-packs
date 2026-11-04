@@ -19,7 +19,6 @@ let SuspiciousPatterns = dynamic([
     "curl ", "wget ", "base64 -d", "nc -e", "/dev/tcp/", "chmod +x",
     "python -c", "sh -c", "aws sts assume-role", "gcloud auth", "az login"
 ]);
-
 CloudProcessEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
 | where (isempty(InputHostName)   or HostName =~ InputHostName)

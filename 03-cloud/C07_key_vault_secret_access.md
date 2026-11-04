@@ -15,7 +15,6 @@ let LookbackEnd   = now();
 let InputAccountUpn = "";
 let InputVaultName  = "";
 let InputIpAddress  = "";
-
 CloudKeyVaultEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
 | where (isempty(InputAccountUpn) or AccountUpn =~ InputAccountUpn)

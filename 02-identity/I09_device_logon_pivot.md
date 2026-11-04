@@ -15,7 +15,6 @@ let LookbackEnd   = now();
 let InputAccountUpn = "";
 let InputDeviceName = "";
 let InputIpAddress  = "";
-
 DeviceLogonEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
 | where (isempty(InputAccountUpn) or AccountName =~ InputAccountUpn

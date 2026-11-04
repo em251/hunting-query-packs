@@ -16,9 +16,11 @@ let LookbackEnd   = now();
 let InputAccountId    = "";
 let InputApplication  = "";
 let InputObjectName   = "";
-
 CloudAppEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
+// at least one selector is required: an unscoped timeline drags RawEventData
+// for a whole week into memory and tells you nothing
+| where isnotempty(InputAccountId) or isnotempty(InputApplication) or isnotempty(InputObjectName)
 | where (isempty(InputAccountId)   or AccountId =~ InputAccountId
                                    or AccountDisplayName has InputAccountId)
     and (isempty(InputApplication) or Application =~ InputApplication)
@@ -33,5 +35,5 @@ CloudAppEvents
           ObjectId, ActivityObjects, UncommonForUser, LastSeenForUser,
           SessionData, RawEventData
 | order by Timestamp asc
-| take 1000
+| take 500
 ```

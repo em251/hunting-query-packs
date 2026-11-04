@@ -16,7 +16,6 @@ let LookbackEnd   = now();
 let InputSenderDomain    = "";
 let InputRecipientDomain = "";
 let InputThreatType      = "";   // "Phish", "Malware", "Spam" or ""
-
 EmailEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
 | where EmailDirection == "Inbound"

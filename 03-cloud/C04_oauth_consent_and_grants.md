@@ -21,7 +21,6 @@ let ConsentActions = dynamic([
     "Add app role assignment grant to user", "Add app role assignment to service principal",
     "Add service principal", "Add owner to application", "Update application"
 ]);
-
 let Consents =
     CloudAppEvents
     | where Timestamp between (LookbackStart .. LookbackEnd)

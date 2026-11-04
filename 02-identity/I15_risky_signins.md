@@ -15,7 +15,6 @@ let LookbackStart = ago(7d);
 let LookbackEnd   = now();
 let Threshold     = 4;
 let InputAccountUpn = "";
-
 EntraIdSignInEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
 | where (isempty(InputAccountUpn) or AccountUpn =~ InputAccountUpn)

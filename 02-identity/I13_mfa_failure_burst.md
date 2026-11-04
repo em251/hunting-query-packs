@@ -17,7 +17,6 @@ let LookbackEnd   = now();
 let Threshold     = 5;
 let InputAccountUpn = "";
 let InputIpAddress  = "";
-
 EntraIdSignInEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
 | where AuthenticationRequirement == "multiFactorAuthentication"

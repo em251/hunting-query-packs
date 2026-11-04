@@ -13,7 +13,6 @@ One row per recipient with: delivery verdict, final action, attachments
 let LookbackStart = ago(7d);
 let LookbackEnd   = now();
 let InputNetworkMessageId = "";   // REQUIRED - paste the NetworkMessageId
-
 let MessageEvents =
     EmailEvents
     | where Timestamp between (LookbackStart .. LookbackEnd)

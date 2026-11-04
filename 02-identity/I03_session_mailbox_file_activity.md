@@ -29,7 +29,6 @@ let OfficeApplications = dynamic([
     "Microsoft Exchange Online", "Microsoft SharePoint Online", "Microsoft OneDrive for Business",
     "Microsoft Teams", "Microsoft 365", "Office 365"
 ]);
-
 CloudAppEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
 | where (isempty(InputAccountUpn)      or AccountId =~ InputAccountUpn)

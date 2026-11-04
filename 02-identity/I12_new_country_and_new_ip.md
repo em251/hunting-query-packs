@@ -15,7 +15,6 @@ let BaselineStart = ago(30d);
 let LookbackStart = ago(7d);
 let LookbackEnd   = now();
 let InputAccountUpn = "";   // REQUIRED
-
 let BaselineCountries =
     EntraIdSignInEvents
     | where Timestamp between (BaselineStart .. LookbackStart)

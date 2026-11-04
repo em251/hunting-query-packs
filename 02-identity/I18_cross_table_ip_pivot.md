@@ -13,7 +13,6 @@ deliberately narrow (7d, single IP) so the union stays cheap.
 let LookbackStart = ago(7d);
 let LookbackEnd   = now();
 let InputIpAddress = "";   // REQUIRED
-
 union
     (EntraIdSignInEvents
      | where Timestamp between (LookbackStart .. LookbackEnd)

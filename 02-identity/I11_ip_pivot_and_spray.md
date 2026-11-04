@@ -14,7 +14,6 @@ let LookbackStart = ago(7d);
 let LookbackEnd   = now();
 let Threshold     = 5;
 let InputIpAddress = "";   // REQUIRED
-
 EntraIdSignInEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
 | where IPAddress == InputIpAddress

@@ -16,7 +16,6 @@ let LookbackStart = ago(7d);
 let LookbackEnd   = now();
 let InputAccountObjectId = "";
 let InputAccountId       = "";
-
 CloudAppEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
 | where (isnotempty(InputAccountObjectId) and AccountObjectId =~ InputAccountObjectId)

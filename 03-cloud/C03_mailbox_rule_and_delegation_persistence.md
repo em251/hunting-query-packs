@@ -25,7 +25,6 @@ let MailboxPersistenceActions = dynamic([
     "Add-MailboxFolderPermission", "Set-MailboxAutoReplyConfiguration",
     "New-TransportRule", "Set-TransportRule"
 ]);
-
 CloudAppEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
 | where ActionType has_any (MailboxPersistenceActions)

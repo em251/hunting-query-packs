@@ -4,7 +4,7 @@
 **Tables:** EntraIdSignInEvents  
 **Inputs:** InputAccountUpn (REQUIRED for a focused look)  
 **Schema:** columns verified against the current Defender XDR advanced hunting schema (EntraIdSignInEvents is the current sign-in table; the older AADSignInEventsBeta table is not used anywhere in this pack).  
-**Performance:** time-bounded with 'between'; entity filters before summarize/joins.
+**Performance:** fill `InputAccountUpn` for a single-account run; left empty it groups every account and builds the sample sets per group, which is the expensive shape.
 
 Baseline view: which apps, which countries, which IPs, how many failures,
 which MFA mode. Run this first, then pivot with I10/I04.
@@ -13,7 +13,6 @@ which MFA mode. Run this first, then pivot with I10/I04.
 let LookbackStart = ago(7d);
 let LookbackEnd   = now();
 let InputAccountUpn = "";   // set to the account under investigation
-
 EntraIdSignInEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
 | where isnotempty(AccountUpn)
@@ -25,11 +24,11 @@ EntraIdSignInEvents
             Apps       = dcount(Application),
             Resources  = dcount(ResourceDisplayName),
             Ips        = dcount(IPAddress),
-            Countries  = make_set(Country, 10),
-            Cities     = make_set(City, 10),
+            Countries  = make_set(Country, 5),
+            Cities     = make_set(City, 5),
             MfaModes   = make_set(AuthenticationRequirement, 3),
             ClientApps = make_set(ClientAppUsed, 5),
-            UserAgents = make_set(UserAgent, 3),
+            UserAgents = make_set(UserAgent, 2),
             CaStatuses = make_set(ConditionalAccessStatus, 3),
             FirstSeen  = min(Timestamp),
             LastSeen   = max(Timestamp)

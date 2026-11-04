@@ -14,7 +14,6 @@ union gets expensive.
 let LookbackStart = ago(7d);
 let LookbackEnd   = now();
 let InputIpAddress = "";   // REQUIRED
-
 union
     (CloudAppEvents
      | where Timestamp between (LookbackStart .. LookbackEnd)

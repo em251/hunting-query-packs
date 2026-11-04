@@ -15,7 +15,6 @@ let LookbackEnd   = now();
 let InputHostName   = "";
 let InputDnsQuery   = "";
 let InputResourceId = "";
-
 CloudDnsEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
 | where (isempty(InputHostName)   or HostName =~ InputHostName)

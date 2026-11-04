@@ -13,7 +13,6 @@ action taken (ZAP, manual purge, user report) with actor and result.
 let LookbackStart = ago(30d);   // post-delivery actions land later than delivery
 let LookbackEnd   = now();
 let InputNetworkMessageId = "";   // REQUIRED
-
 let CurrentState =
     EmailEvents
     | where Timestamp between (LookbackStart .. LookbackEnd)

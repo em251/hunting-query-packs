@@ -16,7 +16,6 @@ let Threshold     = 1000;   // bytes-ish volume threshold; tune per tenant
 let InputStorageAccount = "";
 let InputAccountUpn     = "";
 let InputIpAddress      = "";
-
 CloudStorageAggregatedEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
 | where (isempty(InputStorageAccount) or StorageAccount =~ InputStorageAccount)

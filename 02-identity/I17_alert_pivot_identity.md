@@ -15,7 +15,6 @@ let LookbackStart = ago(14d);
 let LookbackEnd   = now();
 let InputAccountUpn = "";
 let InputIpAddress  = "";
-
 let IdentityAlerts =
     AlertInfo
     | where Timestamp between (LookbackStart .. LookbackEnd)

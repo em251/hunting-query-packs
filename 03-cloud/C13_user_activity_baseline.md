@@ -17,7 +17,6 @@ let AlertTime = now();
 let Timeback  = 30d;
 let InputAccountObjectId = "";   // REQUIRED - stable across UPN changes
 let InputAccountId       = "";   // fallback if you only have the UPN
-
 CloudAppEvents
 | where Timestamp between ((AlertTime - Timeback) .. (AlertTime - 1h))
 | where (isnotempty(InputAccountObjectId) and AccountObjectId =~ InputAccountObjectId)

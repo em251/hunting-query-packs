@@ -27,7 +27,6 @@ intentional: the answer is meaningless without a scope definition.
 ```kql
 let LookbackStart = ago(7d);
 let LookbackEnd   = now();
-
 // --- scope selectors: fill any combination --------------------------------
 let InputNetworkMessageId = "";
 let InputEmailClusterId   = "";
@@ -38,7 +37,6 @@ let InputAttachmentName   = "";
 let InputAttachmentSha256 = "";
 let InputUrlContains      = "";
 let InputUrlDomain        = "";
-
 // --- one branch per selector; each guarded so an empty input adds no ids ---
 let ScopeByMessageId =
     EmailEvents
@@ -92,13 +90,11 @@ let ScopeByClickedUrl =
          or (isnotempty(InputUrlDomain)   and Url has InputUrlDomain)
     | project NetworkMessageId
     | extend Match = "UrlClicked";
-
 let Scope =
     union ScopeByMessageId, ScopeByCluster, ScopeBySubject, ScopeBySender,
           ScopeBySenderDomain, ScopeByAttachment, ScopeByHtmlUrls, ScopeByClickedUrl
     | where isnotempty(NetworkMessageId)
     | summarize MatchReasons = strcat_array(make_set(Match, 10), "+") by NetworkMessageId;
-
 // --- impacted = delivered recipients UNION clickers -----------------------
 let Delivered =
     EmailEvents

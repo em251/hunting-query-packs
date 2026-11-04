@@ -13,7 +13,6 @@ publisher + no recent use is the shortlist worth revoking.
 let LookbackStart = ago(90d);
 let LookbackEnd   = now();
 let InputOAuthAppId = "";
-
 OAuthAppInfo
 | where Timestamp between (LookbackStart .. LookbackEnd)
 | where isempty(InputOAuthAppId) or OAuthAppId =~ InputOAuthAppId

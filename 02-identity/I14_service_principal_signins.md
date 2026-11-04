@@ -15,7 +15,6 @@ let LookbackStart = ago(7d);
 let LookbackEnd   = now();
 let InputServicePrincipalName = "";
 let InputIpAddress            = "";
-
 EntraIdSpnSignInEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
 | where (isempty(InputServicePrincipalName) or ServicePrincipalName =~ InputServicePrincipalName)

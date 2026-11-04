@@ -4,7 +4,7 @@
 **Tables:** CloudAuditEvents  
 **Inputs:** InputIpAddress, InputDataSource, InputResourceId, InputPrincipal (all OPTIONAL)  
 **Schema:** verified against the current Defender XDR advanced hunting schema.  
-**Performance:** time-bounded with 'between'; entity filters before summarize/joins.
+**Performance:** 3-day default, columns projected before the per-platform `case()` dereferences so the dynamic payload is the only wide column in flight.
 
 CloudAuditEvents has no actor column - the principal is inside RawEventData,
 and its shape differs per platform. Each platform is a documented payload:
@@ -16,18 +16,19 @@ Dereferences that do not exist return empty rather than erroring, so this is
 safe across a mixed feed - see C14 to confirm the keys in YOUR data.
 
 ```kql
-let LookbackStart = ago(7d);
+let LookbackStart = ago(3d);
 let LookbackEnd   = now();
 let InputIpAddress  = "";
 let InputDataSource = "";   // "AWS", "GCP", "Azure", "Kubernetes Audit"
 let InputResourceId = "";
 let InputPrincipal  = "";
-
 CloudAuditEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
 | where (isempty(InputIpAddress)  or IPAddress == InputIpAddress)
     and (isempty(InputDataSource) or DataSource =~ InputDataSource)
     and (isempty(InputResourceId) or ResourceId =~ InputResourceId)
+| project Timestamp, DataSource, ActionType, OperationName, ResourceId, IPAddress,
+          CountryCode, City, Isp, IsAnonymousProxy, RawEventData
 | extend Principal = case(
       DataSource =~ "AWS", tostring(RawEventData.userIdentity.arn),
       DataSource =~ "GCP", tostring(RawEventData.protoPayload.authenticationInfo.principalEmail),

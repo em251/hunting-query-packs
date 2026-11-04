@@ -15,7 +15,6 @@ at the strings.
 let LookbackStart = ago(14d);
 let LookbackEnd   = now();
 let InputAccountUpn = "";   // REQUIRED
-
 IdentityDirectoryEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
 | where AccountUpn =~ InputAccountUpn

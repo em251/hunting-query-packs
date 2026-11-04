@@ -15,7 +15,6 @@ let LookbackEnd   = now();
 let InputApplicationId    = "";
 let InputIpAddress        = "";
 let InputAccountObjectId  = "";
-
 GraphAPIAuditEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
 | where (isempty(InputApplicationId)   or ApplicationId =~ InputApplicationId)

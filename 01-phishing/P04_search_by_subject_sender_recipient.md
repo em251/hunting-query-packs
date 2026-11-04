@@ -17,7 +17,6 @@ let InputSenderFrom      = "";
 let InputSenderDomain    = "";
 let InputSenderIp        = "";
 let InputRecipientDomain = "";
-
 EmailEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
 | where (isempty(InputSubjectContains) or Subject has InputSubjectContains)

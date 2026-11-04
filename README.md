@@ -53,6 +53,11 @@ listing the full variable set for that alert type - copy it, do not run it.
   cross-table joins wherever possible.
 * Hard result caps (`take 100 / 500 / 1000`) prevent a wide window from
   flooding the portal.
+* **No blank lines inside a query.** The advanced hunting query box chokes on an
+  empty line mid-pipeline; every fenced block here is written dense.
+* Prefer a semi-join (`| where Key in (SmallSet)`) over a full `join` when you
+  only need to filter, and project columns before anything that materialises
+  rows (`mv-expand`, `make_set`, unions).
 * Thresholds are `let` variables, not magic numbers, so you can tune per tenant.
 
 ## Packs

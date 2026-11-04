@@ -21,12 +21,12 @@ let LookbackEnd   = now();
 let InputActionType = "";
 let InputDataSource = "";
 let SampleLimit     = 3;
-
 let AppKeys =
     CloudAppEvents
     | where Timestamp between (LookbackStart .. LookbackEnd)
     | where isempty(InputActionType) or ActionType =~ InputActionType
     | where isnotempty(RawEventData)
+    | project RawEventData
     | take 500
     | extend Keys = bag_keys(RawEventData)
     | mv-expand Key = Keys
@@ -39,6 +39,7 @@ let AuditKeys =
     | where Timestamp between (LookbackStart .. LookbackEnd)
     | where isempty(InputDataSource) or DataSource =~ InputDataSource
     | where isnotempty(RawEventData)
+    | project RawEventData
     | take 500
     | extend Keys = bag_keys(RawEventData)
     | mv-expand Key = Keys
