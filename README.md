@@ -153,6 +153,25 @@ hash/name pivots, lineage, persistence, egress, lateral movement.
 | `M10_device_triage_summary.md` | Device triage summary |
 | `M11_remote_ip_pivot.md` | Remote IP pivot: one destination across the estate |
 
+### Cloud v2 - `03-cloud/v2/`
+
+IR-workflow layer on the same tables: enumerate actions per account or per object,
+pivot action x actor, replay a user's timeline against an object, and answer "has
+this been seen before" against a 30-day baseline.
+
+| File | Query |
+| --- | --- |
+| `V01_object_action_enumeration.md` | Object-centric: everything done to one resource |
+| `V02_actor_action_enumeration.md` | What did this account do, and to which objects |
+| `V03_action_actor_matrix.md` | Action x actor matrix for one object type, action or application |
+| `V04_user_object_timeline.md` | Timeline: what this user did to what object, from where |
+| `V05_new_action_pair_detection.md` | Has this account ever done this action before? (1 day vs 30-day baseline) |
+| `V06_first_seen_attributes_by_source.md` | First-time-seen attributes tied to the source IP |
+| `V07_cloud_resource_audit.md` | Azure / AWS / GCP resource audit: what was done to this resource |
+| `V08_admin_and_permission_changes.md` | Privilege surface: admin operations and permission changes |
+| `V09_app_initiated_activity.md` | App-initiated activity: what an app did on behalf of users |
+| `V10_activityobjects_shape.md` | What is actually inside ActivityObjects (shape discovery) |
+
 ### CrowdStrike Falcon - `05-crowdstrike-falcon/`
 
 Process investigation in CQL (LogScale), not KQL. Execution prevalence, parent /
@@ -201,6 +220,7 @@ are grounded in the *source* payload schemas:
 | `RawEventData.user.username`, `verb`, `responseStatus` | Kubernetes audit event |
 | `RawEventData.AppAccessContext.AADSessionId` | Office 365 audit schema - "The Microsoft Entra SessionId of the Entra sign-in that was performed by the app on behalf of the user". This is the only way to tie Office activity to an Entra session |
 | `RawEventData.SessionId` / `CorrelationId` | Office 365 audit schema - workload-level ids, distinct from the Entra ones above |
+| `ActivityObjects` | No published inner schema. Treated as opaque text (`tostring(...) has ...`) and never dereferenced by guessed field path; `V10` reveals the actual shape in your tenant |
 
 Because the shape varies by connector, `C14` enumerates the keys actually
 present in your tenant (`bag_keys` + sample values) before you hard-code
