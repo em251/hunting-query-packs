@@ -1,0 +1,44 @@
+# I06 — On-prem and hybrid authentication
+
+**Use when:** the alert involves AD, NTLM/Kerberos or hybrid identity.
+**Alert fields:** AccountUpn, IPAddress, DeviceName
+
+**Pack:** Identity  
+**Tables:** IdentityLogonEvents  
+**Inputs:** InputAccountUpn, InputIpAddress, InputDeviceName (all OPTIONAL)  
+**Schema:** columns verified against the current Defender XDR advanced hunting schema (EntraIdSignInEvents is the current sign-in table; the older AADSignInEventsBeta table is not used anywhere in this pack).  
+**Performance:** time-bounded with 'between'; entity filters before summarize/joins.
+
+Covers AD and Microsoft online service authentication seen by Defender for
+Identity agents: NTLM / Kerberos / LDAP protocol mix and the devices the
+account authenticated to. Look for NTLM where Kerberos is expected (relay)
+and for logons to hosts the user has no business touching.
+
+```kql
+let LookbackStart = ago(7d);
+let LookbackEnd   = now();
+let InputAccountUpn = "";
+let InputIpAddress  = "";
+let InputDeviceName = "";
+IdentityLogonEvents
+| where Timestamp between (LookbackStart .. LookbackEnd)
+| where (isempty(InputAccountUpn) or AccountUpn =~ InputAccountUpn
+                                 or TargetAccountDisplayName =~ InputAccountUpn)
+    and (isempty(InputIpAddress)  or IPAddress == InputIpAddress
+                                  or DestinationIPAddress == InputIpAddress)
+    and (isempty(InputDeviceName) or DeviceName =~ InputDeviceName
+                                  or DestinationDeviceName =~ InputDeviceName)
+| summarize Attempts    = count(),
+            Successes   = countif(ActionType == "LogonSuccess"),
+            Failures    = countif(ActionType == "LogonFailed"),
+            Protocols   = make_set(Protocol, 5),
+            LogonTypes  = make_set(LogonType, 5),
+            FailReasons = make_set(FailureReason, 5),
+            Ips         = make_set(IPAddress, 10),
+            Countries   = make_set(Location, 5),
+            FirstSeen   = min(Timestamp),
+            LastSeen    = max(Timestamp)
+          by AccountUpn, DeviceName, Application
+| order by Failures desc, Attempts desc
+| take 200
+```

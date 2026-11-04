@@ -1,4 +1,7 @@
-# CF01 — Hash scope: how many hosts, how many runs
+# CF01 — Hash prevalence: how many hosts, how many runs
+
+**Use when:** you have a SHA256 and need blast radius.
+**Alert fields:** SHA256HashData
 
 **Pack:** CrowdStrike Falcon (CQL)  
 **Tables:** #event_simpleName=ProcessRollup2  

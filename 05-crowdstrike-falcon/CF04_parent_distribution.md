@@ -1,4 +1,7 @@
-# CF04 — What launched it: parent distribution for a hash
+# CF04 — What launched it (parent distribution)
+
+**Use when:** which parents spawn this hash.
+**Alert fields:** SHA256HashData
 
 **Pack:** CrowdStrike Falcon (CQL)  
 **Tables:** #event_simpleName=ProcessRollup2  

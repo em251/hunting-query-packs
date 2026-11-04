@@ -70,18 +70,18 @@ the supporting pivots.
 
 | File | Query |
 | --- | --- |
-| `P01_campaign_scope_messages.md` | Campaign blast radius: scope at message level (OR selectors) |
-| `P02_campaign_interaction_clicks.md` | Campaign interaction: users who clicked, and what they clicked |
-| `P03_message_triage_by_networkmessageid.md` | Full message triage by NetworkMessageId |
-| `P04_search_by_subject_sender_recipient.md` | Campaign discovery by subject / sender / recipient attributes |
-| `P05_attachment_scope_and_endpoint_landing.md` | Attachment scope + endpoint landing (email -> device) |
-| `P06_click_telemetry_for_urls.md` | Who clicked - UrlClickEvents joined back to the message |
-| `P07_cluster_expansion.md` | Expand a campaign cluster (EmailClusterId) |
-| `P08_post_delivery_actions_and_current_state.md` | Post-delivery actions (ZAP / purge) and current mailbox state |
-| `P09_authentication_and_spoof_signals.md` | Authentication failures, envelope/header mismatch, first contact |
-| `P10_sender_infrastructure_reuse.md` | Sender infrastructure reuse (same IP / Mail-From domain, many messages) |
-| `P11_alert_driven_phishing_pivot.md` | Alert-driven pivot: phishing alerts -> message -> recipients |
-| `P12_lookalike_and_similar_domains.md` | Lookalike / cousin domains for a brand or partner domain |
+| `P01_blast_radius.md` | Blast radius: message-level campaign scope |
+| `P02_click_impact.md` | Click impact: who clicked, and what they clicked |
+| `P03_message_triage.md` | Message triage by NetworkMessageId |
+| `P04_find_campaign.md` | Find the campaign from subject / sender / recipient |
+| `P05_attachment_scope.md` | Attachment scope and endpoint landing |
+| `P06_url_clicks.md` | URL clicks: who clicked this link, and was it blocked |
+| `P07_cluster_expand.md` | Expand a campaign cluster |
+| `P08_post_delivery.md` | Post-delivery actions and current mailbox state |
+| `P09_spoof_signals.md` | Spoof and authentication failures |
+| `P10_sender_infra.md` | Sender infrastructure reuse |
+| `P11_alert_pivot.md` | Start from the phishing alert |
+| `P12_lookalike_domains.md` | Lookalike and cousin domains |
 
 ### Identity - `02-identity/`
 
@@ -91,24 +91,24 @@ attack surface, then the account and fleet-level pivots.
 
 | File | Query |
 | --- | --- |
-| `I01_session_impact_summary.md` | Session impact summary: every workload the session touched |
-| `I02_session_impact_timeline.md` | Session impact timeline: chronological replay of the session |
-| `I03_session_mailbox_file_activity.md` | Session mailbox / file activity (Exchange, SharePoint, OneDrive, Teams) |
-| `I04_session_and_token_replay.md` | Session / token replay: one session id from many IPs or countries |
-| `I05_session_id_join_check.md` | Session id join check (does the Entra id appear in cloud app data?) |
-| `I06_hybrid_logon_pivot.md` | Hybrid / on-prem authentication pivot (IdentityLogonEvents) |
-| `I07_directory_changes.md` | Directory changes touching the account (password, groups, enable/disable) |
-| `I08_directory_recon_enumeration.md` | Directory recon: LDAP / SAMR enumeration from one account or host |
-| `I09_device_logon_pivot.md` | Endpoint logon pivot for a user or host (DeviceLogonEvents) |
-| `I10_account_signin_overview.md` | Account sign-in overview (where / how / how often) |
-| `I11_ip_pivot_and_spray.md` | IP pivot: one source IP against many accounts (spray / AiTM relay) |
-| `I12_new_country_and_new_ip.md` | First-time country / IP for an account (30-day baseline) |
-| `I13_mfa_failure_burst.md` | MFA fatigue / repeated MFA failures |
-| `I14_service_principal_signins.md` | Service principal / managed identity sign-ins (app compromise) |
+| `I01_session_impact.md` | Session impact: every workload the session touched |
+| `I02_session_timeline.md` | Session timeline: chronological replay |
+| `I03_office_activity.md` | Mailbox and file activity for the account |
+| `I04_token_replay.md` | Session and token replay |
+| `I05_join_check.md` | Does the Entra session id resolve in cloud data |
+| `I06_ad_logons.md` | On-prem and hybrid authentication |
+| `I07_directory_changes.md` | Directory changes for the account |
+| `I08_recon.md` | Directory recon and enumeration |
+| `I09_endpoint_logons.md` | Endpoint logons for a user or host |
+| `I10_signin_overview.md` | Sign-in overview for an account |
+| `I11_ip_spray.md` | One IP against many accounts (spray) |
+| `I12_new_country.md` | First-time country or IP for an account |
+| `I13_mfa_fatigue.md` | MFA fatigue and repeated failures |
+| `I14_service_principals.md` | Service principal and managed identity sign-ins |
 | `I15_risky_signins.md` | Risky sign-ins and Conditional Access outcomes |
-| `I16_user_agent_reuse.md` | Client fingerprint reuse (one UA across many accounts) |
-| `I17_alert_pivot_identity.md` | Identity alert pivot (alert + evidence + source IP) |
-| `I18_cross_table_ip_pivot.md` | One IP across every identity table (union pivot) |
+| `I16_ua_reuse.md` | User agent reuse across accounts |
+| `I17_alert_pivot.md` | Start from the identity alert |
+| `I18_ip_all_tables.md` | One IP across every identity table |
 
 ### Cloud - `03-cloud/`
 
@@ -118,22 +118,22 @@ first-seen attributes).
 
 | File | Query |
 | --- | --- |
-| `C01_account_activity_summary.md` | Cloud app activity summary for an account |
-| `C02_account_activity_timeline.md` | Cloud app activity timeline (raw rows for one account) |
-| `C03_mailbox_rule_and_delegation_persistence.md` | Mailbox rule / delegation persistence (exchange online) |
-| `C04_oauth_consent_and_grants.md` | OAuth consent / permission grants enriched with app risk |
-| `C05_oauth_app_inventory_risk.md` | OAuth app inventory: unverified publishers, high privilege, stale use |
-| `C06_cloud_audit_events_pivot.md` | Cloud audit events (AWS / GCP / Azure / K8s) by IP or operation |
-| `C07_key_vault_secret_access.md` | Key Vault secret / key access and failures |
-| `C08_cloud_storage_bulk_and_anonymous.md` | Cloud storage: bulk read and anonymous access |
-| `C09_cloud_dns_anomalies.md` | Cloud workload DNS: query volume, rare responses, long-label tunnelling signal |
-| `C10_cloud_process_execution.md` | Cloud process execution with suspicious command lines |
-| `C11_graph_api_audit.md` | Microsoft Graph API audit: app, scopes, failures |
-| `C12_cross_cloud_ip_pivot.md` | One IP across every cloud table (union pivot) |
-| `C13_user_activity_baseline.md` | Is this normal for the user? 30-day baseline by ISP / country / UA |
-| `C14_raweventdata_key_explorer.md` | RawEventData key explorer - discover the payload shape in your tenant |
-| `C15_first_seen_attributes.md` | First-time-seen attributes for a user (`LastSeenForUser` < 0) |
-| `C16_mailbox_rule_parameter_pivot.md` | Rule parameter pivot: forwarding destinations across the tenant |
+| `C01_activity_summary.md` | Cloud app activity summary for an account |
+| `C02_activity_timeline.md` | Cloud app activity timeline (raw rows) |
+| `C03_mailbox_rules.md` | Mailbox rules and delegation |
+| `C04_oauth_consent.md` | OAuth consent and permission grants |
+| `C05_oauth_inventory.md` | OAuth app inventory risk |
+| `C06_cloud_audit.md` | Cloud audit events by IP or operation |
+| `C07_keyvault_access.md` | Key Vault secret and key access |
+| `C08_storage_bulk.md` | Storage bulk read and anonymous access |
+| `C09_dns_anomalies.md` | Cloud workload DNS anomalies |
+| `C10_cloud_process.md` | Cloud process execution |
+| `C11_graph_api.md` | Graph API audit |
+| `C12_ip_all_tables.md` | One IP across every cloud table |
+| `C13_user_baseline.md` | Is this normal for the user? (30-day baseline) |
+| `C14_payload_keys.md` | RawEventData key explorer |
+| `C15_first_seen_attrs.md` | First-time-seen attributes for a user |
+| `C16_rule_parameters.md` | Mailbox rule parameter pivot |
 
 ### Malware - `04-malware/`
 
@@ -141,17 +141,17 @@ hash/name pivots, lineage, persistence, egress, lateral movement.
 
 | File | Query |
 | --- | --- |
-| `M01_hash_sweep_all_tables.md` | Hash sweep: file, process, image-load and alert evidence |
-| `M02_file_name_and_path_sweep.md` | File name / path sweep across endpoints |
-| `M03_process_lineage.md` | Process lineage: target, its parent, children |
-| `M04_network_egress.md` | Network egress for a device, process or remote IP |
-| `M05_persistence_artifacts.md` | Persistence artifacts: run keys, services, startup folders |
-| `M06_signer_and_certificate_pivot.md` | Signer / certificate pivot (same code-signing identity elsewhere) |
-| `M07_lateral_movement.md` | Lateral movement: logon failures + SMB/RDP fan-out |
-| `M08_payload_origin_pivot.md` | Payload origin: file origin URL / IP and who else downloaded it |
-| `M09_alert_evidence_by_family.md` | Malware alert evidence by threat family |
-| `M10_device_triage_summary.md` | Device triage summary |
-| `M11_remote_ip_pivot.md` | Remote IP pivot: one destination across the estate |
+| `M01_hash_sweep.md` | Hash sweep across file, process, image and alerts |
+| `M02_file_sweep.md` | File name and path sweep |
+| `M03_process_lineage.md` | Process lineage from hash, name or command line |
+| `M04_egress.md` | Network egress for a device or process |
+| `M05_persistence.md` | Persistence artifacts |
+| `M06_signing_cert.md` | Signer and certificate pivot |
+| `M07_lateral_movement.md` | Lateral movement |
+| `M08_payload_origin.md` | Payload origin and sibling downloads |
+| `M09_family_scope.md` | Alert evidence by threat family |
+| `M10_device_triage.md` | Device triage summary |
+| `M11_remote_ip.md` | One destination across the estate |
 
 ### Cloud v2 - `03-cloud/v2/`
 
@@ -162,21 +162,21 @@ been seen before" against a 30-day baseline, and triage the classic cloud alert
 
 | File | Query |
 | --- | --- |
-| `V01_object_action_enumeration.md` | Object-centric: everything done to one resource |
-| `V02_actor_action_enumeration.md` | What did this account do, and to which objects |
-| `V03_action_actor_matrix.md` | Action x actor matrix for one object type, action or application |
-| `V04_user_object_timeline.md` | Timeline: what this user did to what object, from where |
-| `V05_new_action_pair_detection.md` | Has this account ever done this action before? (1 day vs 30-day baseline) |
-| `V06_first_seen_attributes_by_source.md` | First-time-seen attributes tied to the source IP |
-| `V07_cloud_resource_audit.md` | Azure / AWS / GCP resource audit: what was done to this resource |
-| `V08_admin_and_permission_changes.md` | Privilege surface: admin operations and permission changes |
-| `V09_app_initiated_activity.md` | App-initiated activity: what an app did on behalf of users |
-| `V10_activityobjects_shape.md` | What is actually inside ActivityObjects (shape discovery) |
-| `V11_storage_credential_operations.md` | Storage credential operations: list keys, regenerate, SAS |
-| `V12_first_seen_ip_isp_ua.md` | First-seen IP, ISP or user agent against a resource (30-day baseline) |
-| `V13_storage_auth_and_volume.md` | Storage data plane: how it was authenticated, how much moved |
-| `V14_azure_control_plane_changes.md` | Azure control plane: privilege, network and key configuration changes |
-| `V15_alert_ip_blast_radius.md` | Alert triage: everything one IP did across control plane, SaaS and Key Vault |
+| `V01_object_actions.md` | Everything done to one object |
+| `V02_actor_actions.md` | What this account did, and to which objects |
+| `V03_action_by_actor.md` | Who else did this action |
+| `V04_user_object_timeline.md` | Timeline: user and object |
+| `V05_new_action_pairs.md` | First-ever action by this account (30-day baseline) |
+| `V06_new_attrs_by_ip.md` | First-time attributes from this IP |
+| `V07_resource_audit.md` | Azure / AWS / GCP resource audit |
+| `V08_privilege_changes.md` | Privilege and permission changes |
+| `V09_app_activity.md` | App-initiated activity |
+| `V10_object_shape.md` | ActivityObjects shape discovery |
+| `V11_storage_keys.md` | Storage key and SAS operations |
+| `V12_new_ip_isp_ua.md` | First-seen IP, ISP or user agent against a resource |
+| `V13_storage_auth.md` | Storage authentication type and volume |
+| `V14_control_plane.md` | Azure control-plane changes |
+| `V15_ip_blast_radius.md` | Everything this IP touched |
 
 ### CrowdStrike Falcon - `05-crowdstrike-falcon/`
 
@@ -185,16 +185,16 @@ child lineage, command-line scope, and egress for one hash or one process.
 
 | File | Query |
 | --- | --- |
-| `CF01_hash_prevalence.cql` | Hash scope: how many hosts, how many runs |
-| `CF02_process_prevalence.cql` | How common is this process in my environment |
-| `CF03_command_line_hunt.cql` | Command line hunt: who ran this, across the environment |
-| `CF04_parent_distribution.cql` | What launched it: parent distribution for a hash |
-| `CF05_children_of_process.cql` | Children of a process (what it spawned) |
-| `CF06_parent_lookup.cql` | Parent lookup: given a process, find what started it |
-| `CF07_lineage_correlate.cql` | Three-generation lineage with correlate() |
-| `CF08_who_ran_it.cql` | Who ran it: user distribution for a hash |
-| `CF09_rare_process_parent_pairs.cql` | Rarest process/parent pairs in the fleet (novelty sweep) |
-| `CF10_hash_network_fanout.cql` | What the process talked to: DNS + IPv4 under one Falcon PID |
+| `CF01_hash_prevalence.md` | Hash prevalence: how many hosts, how many runs |
+| `CF02_process_prevalence.md` | How common is this process |
+| `CF03_command_line_hunt.md` | Command line hunt |
+| `CF04_parent_distribution.md` | What launched it (parent distribution) |
+| `CF05_children.md` | Children of a process |
+| `CF06_parent_lookup.md` | Parent lookup |
+| `CF07_lineage.md` | Three-generation lineage |
+| `CF08_who_ran.md` | Who ran it (user distribution) |
+| `CF09_rare_pairs.md` | Rarest process and parent pairs |
+| `CF10_network_fanout.md` | What the process talked to |
 
 CQL is a different language from KQL: `groupBy([...], function=[...])` instead of
 `summarize`, `| head(n)` instead of `take`, `?param` / literal edits instead of
@@ -286,7 +286,7 @@ Two consequences worth knowing:
 Each query is a `.md` file:
 
 ```
-# P01 — Campaign blast radius: scope at message level (OR selectors)
+# P01 — Blast radius: message-level campaign scope
 
 **Pack:** Phishing  ·  **Tables:** ...  ·  **Inputs:** ...
 
@@ -312,9 +312,9 @@ Four defects that this caught and a documentation review did not:
 
 | Query | Defect |
 | --- | --- |
-| `M05_persistence_artifacts.md` | single backslashes in registry paths (`"\CurrentVersion\Run"`) - KQL rejects the unknown escape; now doubled |
-| `C04_oauth_consent_and_grants.md` | `CloudAppEvents.ApplicationId` is `int`, so `=~` against a string input fails; wrapped in `tostring()` |
-| `I09_device_logon_pivot.md` | `DeviceLogonEvents` has no `AccountUpn` - it carries `AccountName` / `AccountDomain`; regrouped |
+| `M05_persistence.md` | single backslashes in registry paths (`"\CurrentVersion\Run"`) - KQL rejects the unknown escape; now doubled |
+| `C04_oauth_consent.md` | `CloudAppEvents.ApplicationId` is `int`, so `=~` against a string input fails; wrapped in `tostring()` |
+| `I09_endpoint_logons.md` | `DeviceLogonEvents` has no `AccountUpn` - it carries `AccountName` / `AccountDomain`; regrouped |
 | `M07_lateral_movement.md` | same, in the logon branch of the lateral-movement union |
 
 What this does **not** prove: that a query returns useful rows. Parsing shows the

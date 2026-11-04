@@ -1,4 +1,7 @@
-# I07 — Directory changes touching the account (password, groups, enable/disable)
+# I07 — Directory changes for the account
+
+**Use when:** password resets, group membership changes, enable/disable.
+**Alert fields:** AccountUpn
 
 **Pack:** Identity  
 **Tables:** IdentityDirectoryEvents  

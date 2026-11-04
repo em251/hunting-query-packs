@@ -1,4 +1,7 @@
-# CF02 — How common is this process in my environment
+# CF02 — How common is this process
+
+**Use when:** is this image normal in this fleet.
+**Alert fields:** FileName
 
 **Pack:** CrowdStrike Falcon (CQL)  
 **Tables:** #event_simpleName=ProcessRollup2  

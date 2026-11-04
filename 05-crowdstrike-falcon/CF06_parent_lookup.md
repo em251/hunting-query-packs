@@ -1,4 +1,7 @@
-# CF06 — Parent lookup: given a process, find what started it
+# CF06 — Parent lookup
+
+**Use when:** what started this process.
+**Alert fields:** aid, TargetProcessId
 
 **Pack:** CrowdStrike Falcon (CQL)  
 **Tables:** #event_simpleName=ProcessRollup2  

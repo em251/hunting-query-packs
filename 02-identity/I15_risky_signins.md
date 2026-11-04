@@ -1,5 +1,8 @@
 # I15 — Risky sign-ins and Conditional Access outcomes
 
+**Use when:** Entra ID Protection raised a risk detection.
+**Alert fields:** AccountUpn
+
 **Pack:** Identity  
 **Tables:** EntraIdSignInEvents  
 **Inputs:** InputAccountUpn (OPTIONAL), Threshold (default 4)  

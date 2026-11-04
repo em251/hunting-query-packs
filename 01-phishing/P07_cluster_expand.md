@@ -1,0 +1,44 @@
+# P07 — Expand a campaign cluster
+
+**Use when:** you have an EmailClusterId and want every sibling message.
+**Alert fields:** EmailClusterId
+
+**Pack:** Phishing  
+**Tables:** EmailEvents, EmailAttachmentInfo, EmailUrlInfo  
+**Inputs:** InputEmailClusterId (REQUIRED)  
+**Schema:** every column below exists in the current Defender XDR advanced hunting schema (learn.microsoft.com/defender-xdr/advanced-hunting-*-table).  
+**Performance:** time-bounded with 'between', filters pushed before joins/summarize.
+
+All messages in a cluster with delivery outcome per recipient, plus the
+infrastructure the cluster shares (sender IPs / domains / URL domains).
+
+```kql
+let LookbackStart = ago(7d);
+let LookbackEnd   = now();
+let InputEmailClusterId = "";   // REQUIRED - numeric string from P04
+let ClusterMessages =
+    EmailEvents
+    | where Timestamp between (LookbackStart .. LookbackEnd)
+    | where tostring(EmailClusterId) == InputEmailClusterId
+    | summarize arg_max(Timestamp, *) by NetworkMessageId, RecipientEmailAddress
+    | project Timestamp, NetworkMessageId, RecipientEmailAddress, Subject, SenderFromAddress,
+              SenderFromDomain, SenderMailFromDomain, SenderIPv4, DeliveryAction,
+              DeliveryLocation, ThreatTypes, DetectionMethods, AuthenticationDetails;
+let Domains =
+    EmailUrlInfo
+    | where Timestamp between (LookbackStart .. LookbackEnd)
+    | where NetworkMessageId in ((ClusterMessages | project NetworkMessageId))
+    | summarize UrlDomains = make_set(UrlDomain, 25) by NetworkMessageId;
+let Attachments =
+    EmailAttachmentInfo
+    | where Timestamp between (LookbackStart .. LookbackEnd)
+    | where NetworkMessageId in ((ClusterMessages | project NetworkMessageId))
+    | summarize AttachmentNames = make_set(FileName, 20),
+                AttachmentHashes = make_set(SHA256, 20)
+              by NetworkMessageId;
+ClusterMessages
+| join kind=leftouter Domains on NetworkMessageId
+| join kind=leftouter Attachments on NetworkMessageId
+| order by Timestamp desc
+| take 1000
+```

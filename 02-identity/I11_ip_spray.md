@@ -1,0 +1,41 @@
+# I11 — One IP against many accounts (spray)
+
+**Use when:** the alert names a source IP and you need its blast radius.
+**Alert fields:** IPAddress
+
+**Pack:** Identity  
+**Tables:** EntraIdSignInEvents  
+**Inputs:** InputIpAddress (REQUIRED), Threshold (default 5)  
+**Schema:** columns verified against the current Defender XDR advanced hunting schema (EntraIdSignInEvents is the current sign-in table; the older AADSignInEventsBeta table is not used anywhere in this pack).  
+**Performance:** time-bounded with 'between'; entity filters before summarize/joins.
+
+Two questions in one: what did this IP touch, and is it spraying? The
+AccountCount column is the spray signal; SampleAccounts names the victims.
+
+```kql
+let LookbackStart = ago(7d);
+let LookbackEnd   = now();
+let Threshold     = 5;
+let InputIpAddress = "";   // REQUIRED
+EntraIdSignInEvents
+| where Timestamp between (LookbackStart .. LookbackEnd)
+| where IPAddress == InputIpAddress
+| extend Succeeded = ErrorCode == 0
+| summarize Attempts       = count(),
+            Successes      = countif(Succeeded),
+            Failures       = countif(not(Succeeded)),
+            AccountCount   = dcount(AccountUpn),
+            SampleAccounts = make_set(AccountUpn, 15),
+            Apps           = make_set(Application, 10),
+            AppCount       = dcount(Application),
+            UserAgents     = make_set(UserAgent, 5),
+            Countries      = make_set(Country, 5),
+            Cities         = make_set(City, 5),
+            ErrorCodes     = make_set(ErrorCode, 10),
+            FirstSeen      = min(Timestamp),
+            LastSeen       = max(Timestamp)
+          by IPAddress
+| extend SprayLikely = AccountCount >= Threshold
+| order by AccountCount desc, Attempts desc
+| take 100
+```

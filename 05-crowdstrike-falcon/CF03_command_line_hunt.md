@@ -1,4 +1,7 @@
-# CF03 — Command line hunt: who ran this, across the environment
+# CF03 — Command line hunt
+
+**Use when:** you have a command-line fragment.
+**Alert fields:** CommandLine
 
 **Pack:** CrowdStrike Falcon (CQL)  
 **Tables:** #event_simpleName=ProcessRollup2  

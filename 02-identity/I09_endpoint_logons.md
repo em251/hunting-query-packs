@@ -1,0 +1,39 @@
+# I09 — Endpoint logons for a user or host
+
+**Use when:** you need the device side of an identity incident.
+**Alert fields:** AccountName, DeviceName, IPAddress
+
+**Pack:** Identity  
+**Tables:** DeviceLogonEvents  
+**Inputs:** InputAccountUpn (matched against AccountName - this table carries sAMAccountName/SID, not UPN), InputDeviceName, InputIpAddress  
+**Schema:** columns verified against the current Defender XDR advanced hunting schema (EntraIdSignInEvents is the current sign-in table; the older AADSignInEventsBeta table is not used anywhere in this pack).  
+**Performance:** time-bounded with 'between'; entity filters before summarize/joins.
+
+The endpoint side of an identity incident: which device was logged into, how
+(LogonType), from where, and whether it failed. Pairs with I05.
+
+```kql
+let LookbackStart = ago(7d);
+let LookbackEnd   = now();
+let InputAccountUpn = "";
+let InputDeviceName = "";
+let InputIpAddress  = "";
+DeviceLogonEvents
+| where Timestamp between (LookbackStart .. LookbackEnd)
+| where (isempty(InputAccountUpn) or AccountName =~ InputAccountUpn
+                                   or InitiatingProcessAccountUpn =~ InputAccountUpn)
+    and (isempty(InputDeviceName) or DeviceName =~ InputDeviceName)
+    and (isempty(InputIpAddress)  or RemoteIP == InputIpAddress)
+| summarize Attempts    = count(),
+            Successes   = countif(ActionType == "LogonSuccess"),
+            Failures    = countif(ActionType == "LogonFailed"),
+            LogonTypes  = make_set(LogonType, 5),
+            Protocols   = make_set(Protocol, 5),
+            RemoteIps   = make_set(RemoteIP, 10),
+            FailReasons = make_set(FailureReason, 5),
+            FirstSeen   = min(Timestamp),
+            LastSeen    = max(Timestamp)
+          by AccountName, AccountDomain, DeviceName, RemoteIPType
+| order by Failures desc, Attempts desc
+| take 200
+```

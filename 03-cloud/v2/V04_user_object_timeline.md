@@ -1,4 +1,7 @@
-# V04 — Timeline: what this user did to what object, from where
+# V04 — Timeline: user and object
+
+**Use when:** the narrative view - what this user did to what object, from where.
+**Alert fields:** AccountUpn, ObjectName, ObjectId
 
 **Pack:** Cloud (v2 — IR workflow)  
 **Tables:** CloudAppEvents  

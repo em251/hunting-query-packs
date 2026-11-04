@@ -1,0 +1,37 @@
+# I14 — Service principal and managed identity sign-ins
+
+**Use when:** app or service principal credential compromise is suspected.
+**Alert fields:** ServicePrincipalName, IPAddress
+
+**Pack:** Identity  
+**Tables:** EntraIdSpnSignInEvents  
+**Inputs:** InputServicePrincipalName, InputIpAddress (both OPTIONAL)  
+**Schema:** columns verified against the current Defender XDR advanced hunting schema (EntraIdSignInEvents is the current sign-in table; the older AADSignInEventsBeta table is not used anywhere in this pack).  
+**Performance:** time-bounded with 'between'; entity filters before summarize/joins.
+
+When an app secret is stolen the abuse shows up here, not in user sign-ins.
+IsManagedIdentity / IsConfidentialClient separate real workloads from
+standing secrets, and ResourceId shows what the app reached.
+
+```kql
+let LookbackStart = ago(7d);
+let LookbackEnd   = now();
+let InputServicePrincipalName = "";
+let InputIpAddress            = "";
+EntraIdSpnSignInEvents
+| where Timestamp between (LookbackStart .. LookbackEnd)
+| where (isempty(InputServicePrincipalName) or ServicePrincipalName =~ InputServicePrincipalName)
+    and (isempty(InputIpAddress)             or IPAddress == InputIpAddress)
+| summarize Attempts     = count(),
+            Successes    = countif(ErrorCode == 0),
+            Failures     = countif(ErrorCode != 0),
+            Ips          = make_set(IPAddress, 10),
+            Countries    = make_set(Country, 5),
+            Resources    = make_set(ResourceDisplayName, 10),
+            UserAgents   = make_set(UserAgent, 5),
+            FirstSeen    = min(Timestamp),
+            LastSeen     = max(Timestamp)
+          by ServicePrincipalName, ServicePrincipalId, ApplicationId, IsManagedIdentity, IsConfidentialClient
+| order by Attempts desc
+| take 100
+```
