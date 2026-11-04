@@ -5,7 +5,7 @@
 
 **Pack:** Cloud  
 **Tables:** CloudAppEvents  
-**Inputs:** InputAccountId, InputObjectName, InputRuleDestination (all OPTIONAL)  
+**Inputs:** InputAccountId, InputObjectName, InputRuleDestination (all OPTIONAL), InputIpAddress, InputSessionId  
 **Schema:** verified against the current Defender XDR advanced hunting schema.  
 **Performance:** time-bounded with 'between'; entity filters before summarize/joins.
 
@@ -22,6 +22,8 @@ let LookbackEnd   = now();
 let InputAccountId       = "";
 let InputObjectName      = "";
 let InputRuleDestination = "";   // external address or domain seen in the rule
+let InputIpAddress = "";
+let InputSessionId = "";
 let MailboxPersistenceActions = dynamic([
     "New-InboxRule", "Set-InboxRule", "UpdateInboxRules", "Remove-InboxRule",
     "Set-Mailbox", "Add-MailboxPermission", "Remove-MailboxPermission",
@@ -30,6 +32,8 @@ let MailboxPersistenceActions = dynamic([
 ]);
 CloudAppEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
+| where (isempty(InputIpAddress) or IPAddress == InputIpAddress)
+| where (isempty(InputSessionId) or tostring(SessionData.InLineSessionId) =~ InputSessionId or tostring(RawEventData.AppAccessContext.AADSessionId) =~ InputSessionId)
 | where ActionType has_any (MailboxPersistenceActions)
 | where (isempty(InputAccountId)  or AccountId =~ InputAccountId)
     and (isempty(InputObjectName) or ObjectName has InputObjectName)

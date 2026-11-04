@@ -5,7 +5,7 @@
 
 **Pack:** Cloud (v2 — IR workflow)  
 **Tables:** CloudAppEvents  
-**Inputs:** InputObjectName / InputObjectId / InputObjectType / InputResourceText / InputAccountId / InputIpAddress (fill at least one object or actor selector)  
+**Inputs:** InputObjectName / InputObjectId / InputObjectType / InputResourceText / InputAccountId / InputIpAddress (fill at least one object or actor selector), InputSessionId  
 **Performance:** requires at least one selector; object filters run before the aggregation, and only the columns needed for the rollup are carried.
 
 The question an IR analyst actually asks when they see "anomalous activity on a resource": *what was done to this object, by whom, from where.*
@@ -23,8 +23,10 @@ let InputObjectType = "";
 let InputResourceText = "";
 let InputAccountId = "";
 let InputIpAddress = "";
+let InputSessionId = "";
 CloudAppEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
+| where (isempty(InputSessionId) or tostring(SessionData.InLineSessionId) =~ InputSessionId or tostring(RawEventData.AppAccessContext.AADSessionId) =~ InputSessionId)
 | where isnotempty(InputObjectName) or isnotempty(InputObjectId) or isnotempty(InputObjectType)
      or isnotempty(InputResourceText) or isnotempty(InputAccountId) or isnotempty(InputIpAddress)
 | where (isempty(InputObjectName)   or ObjectName =~ InputObjectName)

@@ -5,7 +5,7 @@
 
 **Pack:** Cloud  
 **Tables:** CloudAppEvents, OAuthAppInfo  
-**Inputs:** InputAccountId, InputOAuthAppId, InputApplicationId (all OPTIONAL)  
+**Inputs:** InputAccountId, InputOAuthAppId, InputApplicationId (all OPTIONAL), InputIpAddress, InputSessionId  
 **Schema:** verified against the current Defender XDR advanced hunting schema. CloudAppEvents has NO AccountUpn column - the actor is AccountId (usually the UPN) plus AccountObjectId. CloudAuditEvents has no actor  
 **Performance:** time-bounded with 'between'; entity filters before summarize/joins.
 
@@ -19,6 +19,8 @@ let LookbackEnd   = now();
 let InputAccountId   = "";
 let InputOAuthAppId  = "";
 let InputApplicationId = "";
+let InputIpAddress = "";
+let InputSessionId = "";
 let ConsentActions = dynamic([
     "Consent to application", "Add OAuth2PermissionGrant", "Add delegated permission grant",
     "Add app role assignment grant to user", "Add app role assignment to service principal",
@@ -27,6 +29,8 @@ let ConsentActions = dynamic([
 let Consents =
     CloudAppEvents
     | where Timestamp between (LookbackStart .. LookbackEnd)
+| where (isempty(InputIpAddress) or IPAddress == InputIpAddress)
+| where (isempty(InputSessionId) or tostring(SessionData.InLineSessionId) =~ InputSessionId or tostring(RawEventData.AppAccessContext.AADSessionId) =~ InputSessionId)
     | where ActionType has_any (ConsentActions) or ActivityType has_any (ConsentActions)
     | where (isempty(InputAccountId)     or AccountId =~ InputAccountId)
         and (isempty(InputOAuthAppId)    or OAuthAppId =~ InputOAuthAppId)

@@ -5,7 +5,7 @@
 
 **Pack:** Cloud (v2 — IR workflow)  
 **Tables:** CloudAppEvents  
-**Inputs:** InputOAuthAppId, InputApplicationId (optional), 7d default  
+**Inputs:** InputOAuthAppId, InputApplicationId (optional), 7d default, InputIpAddress, InputAccountId, InputSessionId  
 **Performance:** filter on the app identifiers first; the actor rollup is capped.
 
 When the identity is an application rather than a person, `AccountType` is Application/System and `OAuthAppId` is populated. This isolates that traffic so you can see which users an app acted for, and whether it impersonated anyone.
@@ -17,8 +17,14 @@ let LookbackStart = ago(7d);
 let LookbackEnd = now();
 let InputOAuthAppId = "";
 let InputApplicationId = "";
+let InputIpAddress = "";
+let InputSessionId = "";
+let InputAccountId = "";
 CloudAppEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
+| where (isempty(InputIpAddress) or IPAddress == InputIpAddress)
+| where (isempty(InputAccountId) or AccountId =~ InputAccountId)
+| where (isempty(InputSessionId) or tostring(SessionData.InLineSessionId) =~ InputSessionId or tostring(RawEventData.AppAccessContext.AADSessionId) =~ InputSessionId)
 | where isnotempty(OAuthAppId) or AccountType has_any ("Application", "System") or IsImpersonated
 | where (isempty(InputOAuthAppId)   or OAuthAppId =~ InputOAuthAppId)
     and (isempty(InputApplicationId) or tostring(ApplicationId) =~ InputApplicationId)

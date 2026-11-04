@@ -5,7 +5,7 @@
 
 **Pack:** Cloud  
 **Tables:** CloudAppEvents  
-**Inputs:** InputAccountId, InputIpAddress, InputApplication (all OPTIONAL)  
+**Inputs:** InputAccountId, InputIpAddress, InputApplication (all OPTIONAL), InputSessionId  
 **Schema:** verified against the current Defender XDR advanced hunting schema. CloudAppEvents has NO AccountUpn column - the actor is AccountId (usually the UPN) plus AccountObjectId. CloudAuditEvents has no actor  
 **Performance:** `InputAccountId` narrows this to one actor. Unfiltered it groups every account x application x action, which is the expensive shape - fill at least one input.
 
@@ -18,8 +18,10 @@ let LookbackEnd   = now();
 let InputAccountId   = "";
 let InputIpAddress   = "";
 let InputApplication = "";
+let InputSessionId = "";
 CloudAppEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
+| where (isempty(InputSessionId) or tostring(SessionData.InLineSessionId) =~ InputSessionId or tostring(RawEventData.AppAccessContext.AADSessionId) =~ InputSessionId)
 | where (isempty(InputAccountId)   or AccountId =~ InputAccountId
                                    or AccountDisplayName has InputAccountId)
     and (isempty(InputIpAddress)   or IPAddress == InputIpAddress)

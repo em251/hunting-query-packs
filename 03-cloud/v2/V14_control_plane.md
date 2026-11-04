@@ -5,7 +5,7 @@
 
 **Pack:** Cloud (v2 — IR workflow)  
 **Tables:** CloudAuditEvents  
-**Inputs:** InputResourceId, InputSubscription, InputPrincipal (all optional), 3d default  
+**Inputs:** InputResourceId, InputSubscription, InputPrincipal (all optional), 3d default, InputIpAddress  
 **Performance:** operation filter first; the resource scope is a substring on ResourceId, which is cheap before any aggregation.
 
 The detection set that matters after storage keys are touched: did the actor also change who can reach the resource?
@@ -18,6 +18,7 @@ let LookbackEnd = now();
 let InputResourceId = "";
 let InputSubscription = "";
 let InputPrincipal = "";
+let InputIpAddress = "";
 let ControlPlaneChanges = dynamic([
     "roleAssignments/write", "roleAssignments/delete", "roleDefinitions/write",
     "storageAccounts/write", "storageAccounts/listKeys", "storageAccounts/regenerateKey",
@@ -28,6 +29,7 @@ let ControlPlaneChanges = dynamic([
 ]);
 CloudAuditEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
+| where (isempty(InputIpAddress) or IPAddress == InputIpAddress)
 | where OperationName has_any (ControlPlaneChanges)
      or tostring(RawEventData.properties.eventName) has_any (ControlPlaneChanges)
      or tostring(RawEventData.eventName) has_any (ControlPlaneChanges)

@@ -5,7 +5,7 @@
 
 **Pack:** Cloud  
 **Tables:** CloudAppEvents  
-**Inputs:** InputAccountObjectId or InputAccountId (REQUIRED)  
+**Inputs:** InputAccountObjectId or InputAccountId (REQUIRED), InputIpAddress  
 **Schema:** verified against the current Defender XDR advanced hunting schema.  
 **Performance:** time-bounded with 'between'; entity filters before summarize/joins.
 
@@ -20,8 +20,10 @@ let AlertTime = now();
 let Timeback  = 30d;
 let InputAccountObjectId = "";   // REQUIRED - stable across UPN changes
 let InputAccountId       = "";   // fallback if you only have the UPN
+let InputIpAddress = "";
 CloudAppEvents
 | where Timestamp between ((AlertTime - Timeback) .. (AlertTime - 1h))
+| where (isempty(InputIpAddress) or IPAddress == InputIpAddress)
 | where (isnotempty(InputAccountObjectId) and AccountObjectId =~ InputAccountObjectId)
      or (isnotempty(InputAccountId) and AccountId =~ InputAccountId)
 | where isnotempty(Isp)

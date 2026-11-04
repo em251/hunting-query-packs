@@ -5,7 +5,7 @@
 
 **Pack:** Cloud (v2 — IR workflow)  
 **Tables:** CloudAuditEvents  
-**Inputs:** InputResourceId, InputResourceName, InputPrincipal, InputDataSource (fill at least one)  
+**Inputs:** InputResourceId, InputResourceName, InputPrincipal, InputDataSource (fill at least one), InputIpAddress  
 **Performance:** 3-day default; Azure resource id is parsed with extract() after the row is already filtered by time.
 
 The control-plane view. `CloudAuditEvents` covers Azure Resource Manager, AWS CloudTrail, GCP audit logs and Kubernetes audit, and has no actor column — the principal lives in the payload.
@@ -19,8 +19,10 @@ let InputResourceId = "";
 let InputResourceName = "";
 let InputPrincipal = "";
 let InputDataSource = "";
+let InputIpAddress = "";
 CloudAuditEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
+| where (isempty(InputIpAddress) or IPAddress == InputIpAddress)
 | where isnotempty(InputResourceId) or isnotempty(InputResourceName)
      or isnotempty(InputPrincipal) or isnotempty(InputDataSource)
 | extend Principal = case(

@@ -5,7 +5,7 @@
 
 **Pack:** Identity  
 **Tables:** EntraIdSignInEvents  
-**Inputs:** InputAccountUpn (REQUIRED for a focused look)  
+**Inputs:** InputAccountUpn (REQUIRED for a focused look), InputIpAddress, InputSessionId, InputCorrelationId  
 **Schema:** columns verified against the current Defender XDR advanced hunting schema (EntraIdSignInEvents is the current sign-in table; the older AADSignInEventsBeta table is not used anywhere in this pack).  
 **Performance:** fill `InputAccountUpn` for a single-account run; left empty it groups every account and builds the sample sets per group, which is the expensive shape.
 
@@ -16,8 +16,14 @@ which MFA mode. Run this first, then pivot with I10/I04.
 let LookbackStart = ago(7d);
 let LookbackEnd   = now();
 let InputAccountUpn = "";   // set to the account under investigation
+let InputIpAddress = "";
+let InputSessionId = "";
+let InputCorrelationId = "";
 EntraIdSignInEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
+| where (isempty(InputIpAddress) or IPAddress == InputIpAddress)
+| where (isempty(InputSessionId) or SessionId =~ InputSessionId)
+| where (isempty(InputCorrelationId) or CorrelationId =~ InputCorrelationId)
 | where isnotempty(AccountUpn)
 | where isempty(InputAccountUpn) or AccountUpn =~ InputAccountUpn
 | extend Succeeded = ErrorCode == 0

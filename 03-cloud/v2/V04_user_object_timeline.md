@@ -5,7 +5,7 @@
 
 **Pack:** Cloud (v2 — IR workflow)  
 **Tables:** CloudAppEvents  
-**Inputs:** InputAccountId (required), InputObjectName or InputObjectId or InputObjectType (optional)  
+**Inputs:** InputAccountId (required), InputObjectName or InputObjectId or InputObjectType (optional), InputIpAddress, InputSessionId  
 **Performance:** account + optional object filter before the projection; the wide RawEventData column is not carried.
 
 The narrative view for a report or a handover: chronological rows of action, object, source IP, country, ISP, user agent, admin flag, and the session id pulled out of the payload.
@@ -19,8 +19,12 @@ let InputAccountId = "";
 let InputObjectName = "";
 let InputObjectId = "";
 let InputObjectType = "";
+let InputIpAddress = "";
+let InputSessionId = "";
 CloudAppEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
+| where (isempty(InputIpAddress) or IPAddress == InputIpAddress)
+| where (isempty(InputSessionId) or tostring(SessionData.InLineSessionId) =~ InputSessionId or tostring(RawEventData.AppAccessContext.AADSessionId) =~ InputSessionId)
 | where isnotempty(InputAccountId)
 | where AccountId =~ InputAccountId or AccountDisplayName =~ InputAccountId
 | where (isempty(InputObjectName) or ObjectName =~ InputObjectName)

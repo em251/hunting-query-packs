@@ -5,7 +5,7 @@
 
 **Pack:** Identity  
 **Tables:** CloudAppEvents  
-**Inputs:** InputAccountUpn or InputAccountObjectId (REQUIRED), LookbackStart  
+**Inputs:** InputAccountUpn or InputAccountObjectId (REQUIRED), LookbackStart, InputSessionId  
 **Schema:** verified against the current Defender XDR advanced hunting schema.  
 **Performance:** account-filtered and time-bounded before any aggregation.
 
@@ -28,12 +28,14 @@ let LookbackEnd   = now();
 let InputAccountUpn      = "";
 let InputIpAddress       = "";   // optional: everything this host touched
 let InputAccountObjectId = "";
+let InputSessionId = "";
 let OfficeApplications = dynamic([
     "Microsoft Exchange Online", "Microsoft SharePoint Online", "Microsoft OneDrive for Business",
     "Microsoft Teams", "Microsoft 365", "Office 365"
 ]);
 CloudAppEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
+| where (isempty(InputSessionId) or tostring(SessionData.InLineSessionId) =~ InputSessionId or tostring(RawEventData.AppAccessContext.AADSessionId) =~ InputSessionId)
 | where (isempty(InputAccountUpn)      or AccountId =~ InputAccountUpn)
     and (isempty(InputAccountObjectId) or AccountObjectId =~ InputAccountObjectId)
     and (isempty(InputIpAddress)      or IPAddress == InputIpAddress)

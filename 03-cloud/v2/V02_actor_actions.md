@@ -5,7 +5,7 @@
 
 **Pack:** Cloud (v2 — IR workflow)  
 **Tables:** CloudAppEvents  
-**Inputs:** InputAccountId / InputAccountObjectId (one required), InputIpAddress, InputApplication  
+**Inputs:** InputAccountId / InputAccountObjectId (one required), InputIpAddress, InputApplication, InputSessionId  
 **Performance:** account filter first, then a rollup on two fields; sets are capped.
 
 The actor-side mirror of V01. Give it a UPN and it enumerates every action that account performed, grouped by action and object type, with the objects touched, the IPs used, and how many of those actions were administrative.
@@ -19,8 +19,10 @@ let InputAccountId = "";
 let InputAccountObjectId = "";
 let InputIpAddress = "";
 let InputApplication = "";
+let InputSessionId = "";
 CloudAppEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
+| where (isempty(InputSessionId) or tostring(SessionData.InLineSessionId) =~ InputSessionId or tostring(RawEventData.AppAccessContext.AADSessionId) =~ InputSessionId)
 | where isnotempty(InputAccountId) or isnotempty(InputAccountObjectId)
 | where (isempty(InputAccountId)       or AccountId =~ InputAccountId)
     and (isempty(InputAccountObjectId) or AccountObjectId =~ InputAccountObjectId)

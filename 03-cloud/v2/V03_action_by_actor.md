@@ -5,7 +5,7 @@
 
 **Pack:** Cloud (v2 — IR workflow)  
 **Tables:** CloudAppEvents  
-**Inputs:** InputObjectType, InputActionType, InputApplication, InputObjectName (fill at least one)  
+**Inputs:** InputObjectType, InputActionType, InputApplication, InputObjectName (fill at least one), InputIpAddress, InputAccountId, InputSessionId  
 **Performance:** requires a selector; the group count is bounded by the object/action filter rather than by the tenant.
 
 When you know *what* was done — a share, a download, a permission grant — but not *who*, this flips V02 around: one row per actor doing that action, against which objects.
@@ -19,8 +19,14 @@ let InputObjectType = "";
 let InputActionType = "";
 let InputApplication = "";
 let InputObjectName = "";
+let InputIpAddress = "";
+let InputSessionId = "";
+let InputAccountId = "";
 CloudAppEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
+| where (isempty(InputIpAddress) or IPAddress == InputIpAddress)
+| where (isempty(InputAccountId) or AccountId =~ InputAccountId)
+| where (isempty(InputSessionId) or tostring(SessionData.InLineSessionId) =~ InputSessionId or tostring(RawEventData.AppAccessContext.AADSessionId) =~ InputSessionId)
 | where isnotempty(InputObjectType) or isnotempty(InputActionType)
      or isnotempty(InputApplication) or isnotempty(InputObjectName)
 | where (isempty(InputObjectType)   or ObjectType =~ InputObjectType)

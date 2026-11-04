@@ -5,7 +5,7 @@
 
 **Pack:** Identity  
 **Tables:** EntraIdSignInEvents  
-**Inputs:** InputAccountUpn (REQUIRED)  
+**Inputs:** InputAccountUpn (REQUIRED), InputIpAddress  
 **Schema:** columns verified against the current Defender XDR advanced hunting schema (EntraIdSignInEvents is the current sign-in table; the older AADSignInEventsBeta table is not used anywhere in this pack).  
 **Performance:** time-bounded with 'between'; entity filters before summarize/joins.
 
@@ -18,9 +18,11 @@ let BaselineStart = ago(30d);
 let LookbackStart = ago(7d);
 let LookbackEnd   = now();
 let InputAccountUpn = "";   // REQUIRED
+let InputIpAddress = "";
 let BaselineCountries =
     EntraIdSignInEvents
     | where Timestamp between (BaselineStart .. LookbackStart)
+| where (isempty(InputIpAddress) or IPAddress == InputIpAddress)
     | where AccountUpn =~ InputAccountUpn
     | where isnotempty(Country)
     | distinct Country;

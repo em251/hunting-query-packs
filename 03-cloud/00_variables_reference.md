@@ -12,6 +12,9 @@ let InputAccountUpn      = "";   // CloudKeyVaultEvents/CloudStorageAggregatedEv
 let InputAccountObjectId = "";   // Entra object id
 let InputIpAddress       = "";   // source IP
 let InputCountryCode     = "";   // ISO-2, e.g. "NG"
+let InputSessionId       = "";   // cloud: matched against BOTH id spaces -
+                                  // SessionData.InLineSessionId (MCAS session control)
+                                  // and RawEventData.AppAccessContext.AADSessionId
 let InputUserAgent       = "";   // UA string or fragment
 // --- workload ---------------------------------------------------------------
 let InputApplication     = "";   // CloudAppEvents.Application, e.g. "Microsoft Exchange Online"

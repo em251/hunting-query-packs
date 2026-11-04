@@ -5,7 +5,7 @@
 
 **Pack:** Cloud  
 **Tables:** CloudAppEvents  
-**Inputs:** InputAccountObjectId or InputAccountId (REQUIRED)  
+**Inputs:** InputAccountObjectId or InputAccountId (REQUIRED), InputIpAddress, InputSessionId  
 **Schema:** verified against the current Defender XDR advanced hunting schema.  
 **Performance:** time-bounded with 'between'; entity filters before summarize/joins.
 
@@ -19,8 +19,12 @@ let LookbackStart = ago(7d);
 let LookbackEnd   = now();
 let InputAccountObjectId = "";
 let InputAccountId       = "";
+let InputIpAddress = "";
+let InputSessionId = "";
 CloudAppEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
+| where (isempty(InputIpAddress) or IPAddress == InputIpAddress)
+| where (isempty(InputSessionId) or tostring(SessionData.InLineSessionId) =~ InputSessionId or tostring(RawEventData.AppAccessContext.AADSessionId) =~ InputSessionId)
 | where (isnotempty(InputAccountObjectId) and AccountObjectId =~ InputAccountObjectId)
      or (isnotempty(InputAccountId) and AccountId =~ InputAccountId)
 | where isnotempty(LastSeenForUser)

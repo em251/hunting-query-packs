@@ -5,7 +5,7 @@
 
 **Pack:** Cloud (v2 — IR workflow)  
 **Tables:** CloudAppEvents  
-**Inputs:** InputAccountId, InputObjectName (both optional), 24h default  
+**Inputs:** InputAccountId, InputObjectName (both optional), 24h default, InputIpAddress, InputSessionId  
 **Performance:** 24-hour window; the action list is a variable so it can be tuned without touching the logic.
 
 Privilege escalation in SaaS rarely needs malware: a consent grant, a role assignment or a mailbox delegation is enough. This is the short list of operations worth reviewing every day, grouped by actor and target.
@@ -17,6 +17,8 @@ let LookbackStart = ago(24h);
 let LookbackEnd = now();
 let InputAccountId = "";
 let InputObjectName = "";
+let InputIpAddress = "";
+let InputSessionId = "";
 let PrivilegedActions = dynamic([
     "Consent to application", "Add service principal", "Add app role assignment grant to user",
     "Add app role assignment to service principal", "Add OAuth2PermissionGrant",
@@ -27,6 +29,8 @@ let PrivilegedActions = dynamic([
 ]);
 CloudAppEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
+| where (isempty(InputIpAddress) or IPAddress == InputIpAddress)
+| where (isempty(InputSessionId) or tostring(SessionData.InLineSessionId) =~ InputSessionId or tostring(RawEventData.AppAccessContext.AADSessionId) =~ InputSessionId)
 | where ActionType has_any (PrivilegedActions) or IsAdminOperation
 | where (isempty(InputAccountId)  or AccountId =~ InputAccountId)
     and (isempty(InputObjectName) or ObjectName has InputObjectName)

@@ -5,7 +5,7 @@
 
 **Pack:** Identity  
 **Tables:** EntraIdSignInEvents  
-**Inputs:** InputAccountUpn (OPTIONAL), Threshold (default 4)  
+**Inputs:** InputAccountUpn (OPTIONAL), Threshold (default 4), InputIpAddress, InputSessionId  
 **Schema:** columns verified against the current Defender XDR advanced hunting schema (EntraIdSignInEvents is the current sign-in table; the older AADSignInEventsBeta table is not used anywhere in this pack).  
 **Performance:** time-bounded with 'between'; entity filters before summarize/joins.
 
@@ -18,8 +18,12 @@ let LookbackStart = ago(7d);
 let LookbackEnd   = now();
 let Threshold     = 4;
 let InputAccountUpn = "";
+let InputIpAddress = "";
+let InputSessionId = "";
 EntraIdSignInEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
+| where (isempty(InputIpAddress) or IPAddress == InputIpAddress)
+| where (isempty(InputSessionId) or SessionId =~ InputSessionId)
 | where (isempty(InputAccountUpn) or AccountUpn =~ InputAccountUpn)
 | where RiskLevelDuringSignIn > 0
      or RiskState > 0

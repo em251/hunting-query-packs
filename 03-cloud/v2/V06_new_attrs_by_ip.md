@@ -5,7 +5,7 @@
 
 **Pack:** Cloud (v2 — IR workflow)  
 **Tables:** CloudAppEvents  
-**Inputs:** InputAccountId or InputIpAddress (one required)  
+**Inputs:** InputAccountId or InputIpAddress (one required), InputSessionId  
 **Performance:** one bounded scan, filtered to the account or IP before the bag is expanded.
 
 `LastSeenForUser` is a bag of attribute -> days since last seen for that user, and a negative value means first time ever. The documented example keys include `ActionType`, `OSPlatform` and `ISP`.
@@ -17,8 +17,10 @@ let LookbackStart = ago(7d);
 let LookbackEnd = now();
 let InputAccountId = "";
 let InputIpAddress = "";
+let InputSessionId = "";
 CloudAppEvents
 | where Timestamp between (LookbackStart .. LookbackEnd)
+| where (isempty(InputSessionId) or tostring(SessionData.InLineSessionId) =~ InputSessionId or tostring(RawEventData.AppAccessContext.AADSessionId) =~ InputSessionId)
 | where isnotempty(InputAccountId) or isnotempty(InputIpAddress)
 | where (isempty(InputAccountId) or AccountId =~ InputAccountId)
     and (isempty(InputIpAddress) or IPAddress == InputIpAddress)
