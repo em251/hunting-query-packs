@@ -29,6 +29,7 @@ EmailEvents
     and (isempty(InputRecipientDomain) or RecipientDomain =~ InputRecipientDomain)
 | summarize Emails          = count(),
             Recipients      = dcount(RecipientEmailAddress),
+            RecipientSample = make_set(RecipientEmailAddress, 10),
             Senders         = dcount(SenderFromAddress),
             SenderIps       = dcount(SenderIPv4),
             FirstSeen       = min(Timestamp),

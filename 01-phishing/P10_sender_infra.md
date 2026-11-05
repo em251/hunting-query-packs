@@ -30,6 +30,7 @@ let SuspiciousMail =
 SuspiciousMail
 | summarize Messages   = dcount(NetworkMessageId),
             Recipients = dcount(RecipientEmailAddress),
+            RecipientSample = make_set(RecipientEmailAddress, 10),
             FirstSeen  = min(Timestamp),
             LastSeen   = max(Timestamp),
             SenderDomains = make_set(SenderFromDomain, 10),

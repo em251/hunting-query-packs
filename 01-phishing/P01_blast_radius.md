@@ -86,21 +86,27 @@ let Recipients =
     EmailEvents
     | where Timestamp between (LookbackStart .. LookbackEnd)
     | where NetworkMessageId in (Scope)
-    | summarize Recipients = dcount(RecipientEmailAddress) by NetworkMessageId;
+    | summarize Recipients = dcount(RecipientEmailAddress),
+                RecipientSample = make_set(RecipientEmailAddress, 15)
+              by NetworkMessageId;
 let Clicks =
     UrlClickEvents
     | where Timestamp between (LookbackStart .. LookbackEnd)
     | where NetworkMessageId in (Scope)
-    | summarize Clickers = dcount(AccountUpn),
-                Clicks = count(),
-                BlockedClicks = countif(ActionType != "ClickAllowed")
+    | summarize Clickers      = dcount(AccountUpn),
+                ClickedBy     = make_set(AccountUpn, 25),
+                ClickedUrls   = make_set(Url, 10),
+                Clicks        = count(),
+                BlockedClicks = countif(ActionType != "ClickAllowed"),
+                FirstClick    = min(Timestamp)
               by NetworkMessageId;
 MessageDetail
 | join kind=leftouter Scope      on NetworkMessageId
 | join kind=leftouter Recipients on NetworkMessageId
 | join kind=leftouter Clicks     on NetworkMessageId
 | project-reorder SentTime, Subject, SenderFromAddress, DeliveryAction, DeliveryLocation,
-                  Recipients, Clickers, Clicks, MatchReasons
+                  Recipients, Clickers, ClickedBy, ClickedUrls, Clicks, BlockedClicks,
+                  FirstClick, MatchReasons, RecipientSample
 | order by Clickers desc, SentTime desc
 | take 1000
 ```

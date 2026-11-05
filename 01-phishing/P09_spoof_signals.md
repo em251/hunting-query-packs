@@ -31,6 +31,7 @@ EmailEvents
 | where AuthFailures or EnvelopeMismatch or FirstContact
 | summarize Emails = count(),
             Recipients = dcount(RecipientEmailAddress),
+            RecipientSample = make_set(RecipientEmailAddress, 10),
             FirstSeen = min(Timestamp),
             LastSeen = max(Timestamp),
             AuthDetails = make_set(AuthenticationDetails, 5),
